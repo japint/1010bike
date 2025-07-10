@@ -2,8 +2,9 @@ import Link from "next/link";
 import Image from "next/image";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import ProductPrice from "./product-price";
+import { Product } from "@/types";
 
-const ProductCard = ({ product }: { product: any }) => {
+const ProductCard = ({ product }: { product: Product }) => {
   if (!product || !product.slug || !product.images?.[0] || !product.name) {
     // Optionally return fallback UI or nothing
     return null;
