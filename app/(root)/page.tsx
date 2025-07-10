@@ -3,7 +3,10 @@ export const metadata = {
   title: "Home",
 };
 
-const HomePage = () => {
+const delay = (ms) => new Promise((res) => setTimeout(res, ms));
+
+const HomePage = async () => {
+  await delay(2000);
   return (
     <main>
       <h1>Welcome to Next.js with shadcn/ui</h1>
