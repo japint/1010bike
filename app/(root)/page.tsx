@@ -1,17 +1,15 @@
-import { Button } from "@/components/ui/button";
-export const metadata = {
-  title: "Home",
-};
+import ProductList from "@/components/shared/product/product-list";
+import sampleData from "@/db/sample-data";
 
-const delay = (ms) => new Promise((res) => setTimeout(res, ms));
-
-const HomePage = async () => {
-  await delay(2000);
+const HomePage = () => {
   return (
-    <main>
-      <h1>Welcome to Next.js with shadcn/ui</h1>
-      <Button>Button</Button>
-    </main>
+    <>
+      <ProductList
+        data={sampleData.products}
+        title="Newest Arrivals"
+        limit={4}
+      />
+    </>
   );
 };
 
