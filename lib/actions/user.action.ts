@@ -1,7 +1,6 @@
 "use server";
 import { signInFormSchema } from "@/lib/validators";
 import { signIn, signOut } from "@/auth";
-import { isRedirectError } from "next/dist/client/components/redirect";
 
 // sign in user with credentials
 export async function signInWWithCredentials(
@@ -17,7 +16,14 @@ export async function signInWWithCredentials(
 
     return { success: true, message: "Signed in successfully" };
   } catch (error) {
-    if (isRedirectError(error)) {
+    // Check if it's a redirect error by checking the error properties
+    if (
+      error &&
+      typeof error === "object" &&
+      "digest" in error &&
+      typeof error.digest === "string" &&
+      error.digest.startsWith("NEXT_REDIRECT")
+    ) {
       throw error;
     }
 
