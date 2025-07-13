@@ -7,3 +7,8 @@ export const SERVER_URL =
 export const LATEST_PRODUCTS_LIMIT = 4;
 export const FEATURED_PRODUCTS_LIMIT =
   Number(process.env.NEXT_PUBLIC_FEATURED_PRODUCTS_LIMIT) || 4;
+
+export const signInDefaultValues = {
+  email: "",
+  password: "",
+};
