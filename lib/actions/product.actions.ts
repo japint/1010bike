@@ -12,7 +12,15 @@ export async function getLatestProducts() {
         CreatedAt: "desc",
       },
     });
-    return convertToPlainObject(data);
+
+    // Convert Decimal fields to strings to match the Product type
+    const convertedData = data.map((product) => ({
+      ...product,
+      price: product.price.toString(),
+      rating: product.rating.toString(),
+    }));
+
+    return convertToPlainObject(convertedData);
   } catch (error) {
     console.error("Error fetching products:", error);
     throw error;
@@ -27,7 +35,17 @@ export async function getProductBySlug(slug: string) {
     const data = await prisma.product.findFirst({
       where: { slug: slug },
     });
-    return convertToPlainObject(data);
+
+    if (!data) return null;
+
+    // Convert Decimal fields to strings to match the Product type
+    const convertedData = {
+      ...data,
+      price: data.price.toString(),
+      rating: data.rating.toString(),
+    };
+
+    return convertToPlainObject(convertedData);
   } catch (error) {
     console.error("Error fetching product by slug:", error);
     throw error;
