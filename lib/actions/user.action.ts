@@ -3,6 +3,7 @@ import { signInFormSchema, signUpFormSchema } from "@/lib/validators";
 import { signIn, signOut } from "@/auth";
 import { hashSync } from "bcrypt-ts-edge";
 import { prisma } from "@/db/prisma";
+import { formatError } from "@/lib/utils";
 
 // sign in user with credentials
 export async function signInWWithCredentials(
@@ -68,7 +69,18 @@ export async function signUpUser(prevState: unknown, formData: FormData) {
     });
 
     return { success: true, message: "User created successfully" };
-  } catch {
-    return { success: false, message: "Error creating user" };
+  } catch (error) {
+    // Check if it's a redirect error by checking the error properties
+    if (
+      error &&
+      typeof error === "object" &&
+      "digest" in error &&
+      typeof error.digest === "string" &&
+      error.digest.startsWith("NEXT_REDIRECT")
+    ) {
+      throw error;
+    }
+
+    return { success: false, message: formatError(error) };
   }
 }
