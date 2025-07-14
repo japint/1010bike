@@ -18,14 +18,15 @@ export const metadata: Metadata = {
 };
 
 const SignInPage = async (props: {
-  searchParams?: { [key: string]: string | string[] | undefined };
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) => {
-  const { callbackUrl } = await props.searchParams; // Unused but kept for consistency with Next.js conventions
+  const searchParams = await props.searchParams;
+  const callbackUrl = searchParams?.callbackUrl;
 
   const session = await auth();
 
   if (session) {
-    redirect(callbackUrl || "/");
+    redirect((callbackUrl as string) || "/");
   }
 
   return (
