@@ -17,11 +17,15 @@ export const metadata: Metadata = {
   title: "Sign In",
 };
 
-const SignInPage = async () => {
+const SignInPage = async (props: {
+  searchParams?: { [key: string]: string | string[] | undefined };
+}) => {
+  const { callbackUrl } = await props.searchParams; // Unused but kept for consistency with Next.js conventions
+
   const session = await auth();
 
   if (session) {
-    redirect("/");
+    redirect(callbackUrl || "/");
   }
 
   return (
