@@ -5,10 +5,27 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { signInDefaultValues } from "@/lib/constants";
 import Link from "next/link";
+import { useActionState } from "react";
+import { useFormStatus } from "react-dom";
+import { signInWWithCredentials } from "@/lib/actions/user.action";
 
 const CredentialsSignInForm = () => {
+  const [data, action] = useActionState(signInWWithCredentials, {
+    success: false,
+    message: "",
+  });
+
+  const SigninButton = () => {
+    const { pending } = useFormStatus();
+    return (
+      <Button className="w-full" variant="default" disabled={pending}>
+        {pending ? "Signing In..." : "Sign In"}
+      </Button>
+    );
+  };
+
   return (
-    <form>
+    <form action={action} className="space-y-4">
       <div className="space-y-6">
         <div>
           <Label htmlFor="email">Email</Label>
@@ -32,11 +49,13 @@ const CredentialsSignInForm = () => {
             defaultValue={signInDefaultValues.password}
           />
         </div>
-        <div>
-          <Button className="w-full" variant="default">
-            Sign In
-          </Button>
-        </div>
+
+        <SigninButton />
+
+        {data && !data.success && (
+          <div className="text-center text-destructive">{data.message}</div>
+        )}
+
         <div className="text-sm text-center text-muted-foreground">
           Don&apos;t have an account?{" "}
           <Link href="/sign-up" target="_self" className="link">
