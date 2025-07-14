@@ -3,8 +3,25 @@ import { PrismaAdapter } from "@auth/prisma-adapter";
 import { prisma } from "./db/prisma";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { compareSync } from "bcrypt-ts-edge";
+import type { NextAuthConfig } from "next-auth";
 
-export const config = {
+// Extend NextAuth types
+declare module "next-auth" {
+  interface User {
+    role?: string;
+  }
+  interface Session {
+    user: {
+      id?: string;
+      name?: string | null;
+      email?: string | null;
+      image?: string | null;
+      role?: string;
+    };
+  }
+}
+
+export const config: NextAuthConfig = {
   pages: {
     signIn: "/sign-in",
     error: "/sign-in",
@@ -56,6 +73,40 @@ export const config = {
       },
     }),
   ],
+  callbacks: {
+    async session({ session, token, trigger, newSession }) {
+      // Assign user ID from token to session
+      if (session.user && token.sub) {
+        session.user.id = token.sub;
+      }
+
+      // Add role to session from token
+      if (session.user && token.role && typeof token.role === "string") {
+        session.user.role = token.role;
+      }
+
+      // Handle session update
+      if (trigger === "update" && newSession?.name && session.user) {
+        session.user.name = newSession.name;
+      }
+
+      return session;
+    },
+
+    async jwt({ token, user }) {
+      // If user is signing in, persist user data into token
+      if (user) {
+        token.id = user.id;
+        token.name = user.name;
+        token.email = user.email;
+        if ("role" in user) {
+          token.role = user.role;
+        }
+      }
+
+      return token;
+    },
+  },
 };
 
 export const { handlers, auth, signIn, signOut } = NextAuth(config);
