@@ -4,6 +4,7 @@ import { prisma } from "./db/prisma";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { compareSync } from "bcrypt-ts-edge";
 import type { NextAuthConfig } from "next-auth";
+import { NextResponse } from "next/server";
 
 // Extend NextAuth types
 declare module "next-auth" {
@@ -106,7 +107,30 @@ export const config: NextAuthConfig = {
 
       return token;
     },
+    authorized: async ({ request }) => {
+      // check for session cart cookie
+      if (!request.cookies.get("sessionCartId")) {
+        // generate new session cart ID cookie
+        const sessionCartId = crypto.randomUUID();
+
+        // create new response and add the cookie
+        const response = NextResponse.next();
+
+        // set newly generated sessionCartId in the response cookies with proper expiration
+        response.cookies.set("sessionCartId", sessionCartId, {
+          httpOnly: true,
+          secure: process.env.NODE_ENV === "production",
+          sameSite: "lax",
+          maxAge: 60 * 60 * 24 * 30, // 30 days
+        });
+
+        return response;
+      }
+
+      // Cookie exists, proceed normally
+      return true;
+    },
   },
-};
+} satisfies NextAuthConfig;
 
 export const { handlers, auth, signIn, signOut } = NextAuth(config);
