@@ -302,11 +302,6 @@ export async function updateItemQuantity(productId: string, qty: number) {
       };
     }
 
-    // If quantity is 0 or negative, remove the item
-    if (qty <= 0) {
-      return removeItemFromCart(productId);
-    }
-
     // Check if item exists in cart
     const itemExists = cart.items.find((item) => item.productId === productId);
     if (!itemExists) {
@@ -314,6 +309,11 @@ export async function updateItemQuantity(productId: string, qty: number) {
         success: false,
         message: "Item not found in cart",
       };
+    }
+
+    // If quantity is 0 or negative, remove the item
+    if (qty <= 0) {
+      return removeItemFromCart(productId);
     }
 
     // Check product stock availability
@@ -363,6 +363,66 @@ export async function updateItemQuantity(productId: string, qty: number) {
     };
   } catch (error) {
     console.error("Update quantity error:", error);
+    return {
+      success: false,
+      message: formatError(error),
+    };
+  }
+}
+
+// Add helper functions for increment/decrement
+export async function incrementItemQuantity(productId: string) {
+  try {
+    const cart = await getMyCart();
+    if (!cart) {
+      return {
+        success: false,
+        message: "Cart not found",
+      };
+    }
+
+    const item = cart.items.find((item) => item.productId === productId);
+    if (!item) {
+      return {
+        success: false,
+        message: "Item not found in cart",
+      };
+    }
+
+    // Increment quantity by 1
+    return await updateItemQuantity(productId, item.qty + 1);
+  } catch (error) {
+    console.error("Increment quantity error:", error);
+    return {
+      success: false,
+      message: formatError(error),
+    };
+  }
+}
+
+export async function decrementItemQuantity(productId: string) {
+  try {
+    const cart = await getMyCart();
+    if (!cart) {
+      return {
+        success: false,
+        message: "Cart not found",
+      };
+    }
+
+    const item = cart.items.find((item) => item.productId === productId);
+    if (!item) {
+      return {
+        success: false,
+        message: "Item not found in cart",
+      };
+    }
+
+    // Decrement quantity by 1, but don't go below 1
+    const newQuantity = Math.max(1, item.qty - 1);
+    return await updateItemQuantity(productId, newQuantity);
+  } catch (error) {
+    console.error("Decrement quantity error:", error);
     return {
       success: false,
       message: formatError(error),
