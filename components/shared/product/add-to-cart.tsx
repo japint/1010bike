@@ -1,22 +1,23 @@
 "use client";
 import { Button } from "@/components/ui/button";
-import { useRouter } from "next/navigation";
-import { Plus, Minus, Loader } from "lucide-react";
+import { Plus, Minus, Loader2 } from "lucide-react";
 import { Cart, CartItem } from "@/types";
 import { useToast } from "@/hooks/use-toast";
-import { ToastAction } from "@/components/ui/toast";
 import {
   addItemToCart,
-  decrementItemQuantity,
-  incrementItemQuantity,
+  removeItemFromCart,
+  updateItemQuantity,
 } from "@/lib/actions/cart.action";
 import { useTransition } from "react";
 
 const AddToCart = ({ cart, item }: { cart?: Cart; item: CartItem }) => {
-  const router = useRouter();
   const { toast } = useToast();
-
   const [isPending, startTransition] = useTransition();
+
+  // Find if item exists in cart
+  const existItem = cart?.items.find(
+    (cartItem) => cartItem.productId === item.productId
+  );
 
   const handleAddToCart = async () => {
     startTransition(async () => {
@@ -28,26 +29,20 @@ const AddToCart = ({ cart, item }: { cart?: Cart; item: CartItem }) => {
         });
         return;
       }
-      // handle success add to cart
       toast({
         description: `${item.name} added to cart`,
-        action: (
-          <ToastAction
-            className="bg-primary text-white hover:bg-gray-800 "
-            altText="Go to Cart"
-            onClick={() => router.push("/cart")}
-          >
-            Go to Cart
-          </ToastAction>
-        ),
       });
     });
   };
 
-  // handle increment quantity
-  const handleIncrementQuantity = async () => {
+  const handleIncrement = async () => {
+    if (!existItem) return;
+
     startTransition(async () => {
-      const res = await incrementItemQuantity(item.productId);
+      const res = await updateItemQuantity(
+        existItem.productId,
+        existItem.qty + 1
+      );
       if (!res || !res.success) {
         toast({
           variant: "destructive",
@@ -56,32 +51,47 @@ const AddToCart = ({ cart, item }: { cart?: Cart; item: CartItem }) => {
         return;
       }
       toast({
-        description: `${item.name} quantity updated`,
+        description: "Quantity updated",
       });
     });
   };
 
-  // handle decrement quantity
-  const handleDecrementQuantity = async () => {
+  const handleDecrement = async () => {
+    if (!existItem) return;
+
     startTransition(async () => {
-      const res = await decrementItemQuantity(item.productId);
-      if (!res || !res.success) {
+      if (existItem.qty === 1) {
+        // If quantity is 1, remove item completely
+        const res = await removeItemFromCart(existItem.productId);
+        if (!res || !res.success) {
+          toast({
+            variant: "destructive",
+            description: res?.message || "Failed to remove item.",
+          });
+          return;
+        }
         toast({
-          variant: "destructive",
-          description: res?.message || "Failed to update quantity.",
+          description: "Item removed from cart",
         });
-        return;
+      } else {
+        // If quantity > 1, just decrease by 1
+        const res = await updateItemQuantity(
+          existItem.productId,
+          existItem.qty - 1
+        );
+        if (!res || !res.success) {
+          toast({
+            variant: "destructive",
+            description: res?.message || "Failed to update quantity.",
+          });
+          return;
+        }
+        toast({
+          description: "Quantity updated",
+        });
       }
-      toast({
-        description: `${item.name} quantity updated`,
-      });
     });
   };
-
-  // check if item already exists in cart
-  const existItem =
-    cart &&
-    cart.items.find((cartItem) => cartItem.productId === item.productId);
 
   return existItem ? (
     <div className="flex items-center gap-2">
@@ -89,11 +99,11 @@ const AddToCart = ({ cart, item }: { cart?: Cart; item: CartItem }) => {
         className="h-8 w-8"
         type="button"
         variant="outline"
-        onClick={handleDecrementQuantity}
+        onClick={handleDecrement}
         disabled={isPending}
       >
         {isPending ? (
-          <Loader className="w-4 h-4 animate-spin" />
+          <Loader2 className="w-4 h-4 animate-spin" />
         ) : (
           <Minus className="h-4 w-4" />
         )}
@@ -103,11 +113,11 @@ const AddToCart = ({ cart, item }: { cart?: Cart; item: CartItem }) => {
         className="h-8 w-8"
         type="button"
         variant="outline"
-        onClick={handleIncrementQuantity}
+        onClick={handleIncrement}
         disabled={isPending}
       >
         {isPending ? (
-          <Loader className="w-4 h-4 animate-spin" />
+          <Loader2 className="w-4 h-4 animate-spin" />
         ) : (
           <Plus className="h-4 w-4" />
         )}
@@ -122,7 +132,7 @@ const AddToCart = ({ cart, item }: { cart?: Cart; item: CartItem }) => {
     >
       {isPending ? (
         <>
-          <Loader className="w-4 h-4 animate-spin mr-2" />
+          <Loader2 className="w-4 h-4 animate-spin mr-2" />
           Adding...
         </>
       ) : (
