@@ -21,9 +21,9 @@ export const signUpDefaultValues = {
 };
 
 export const shippingAddressDefaultValues = {
-  firstName: "Walter White",
-  streetAddress: "123 Main St",
-  city: "Anytown",
-  postalCode: "12345",
-  country: "USA",
+  firstName: "",
+  streetAddress: "",
+  city: "",
+  postalCode: "",
+  country: "",
 };
