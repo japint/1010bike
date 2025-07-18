@@ -1,9 +1,15 @@
 "use server";
-import { signInFormSchema, signUpFormSchema } from "@/lib/validators";
-import { signIn, signOut } from "@/auth";
+import {
+  shippingAddressSchema,
+  signInFormSchema,
+  signUpFormSchema,
+} from "@/lib/validators";
+import { auth, signIn, signOut } from "@/auth";
 import { hashSync } from "bcrypt-ts-edge";
 import { prisma } from "@/db/prisma";
 import { formatError } from "@/lib/utils";
+import { revalidatePath } from "next/cache";
+import { z } from "zod";
 
 // sign in user with credentials
 export async function signInWWithCredentials(
@@ -92,4 +98,47 @@ export async function getUserById(userId: string) {
   });
   if (!user) throw new Error("User not found");
   return user;
+}
+
+// update the user's address
+export async function updateUserAddress(
+  data: z.infer<typeof shippingAddressSchema>
+) {
+  try {
+    const session = await auth();
+
+    if (!session?.user?.id) {
+      return {
+        success: false,
+        message: "User not authenticated",
+      };
+    }
+
+    const currentUser = await prisma.user.findFirst({
+      where: { id: session.user.id },
+    });
+
+    if (!currentUser) {
+      return {
+        success: false,
+        message: "User not found",
+      };
+    }
+
+    const address = shippingAddressSchema.parse(data);
+
+    await prisma.user.update({
+      where: { id: currentUser.id },
+      data: { address },
+    });
+
+    // Revalidate relevant paths
+    revalidatePath("/shipping-address");
+    revalidatePath("/payment-method");
+
+    return { success: true, message: "Address updated successfully" };
+  } catch (error) {
+    console.error("Update address error:", error);
+    return { success: false, message: formatError(error) };
+  }
 }
