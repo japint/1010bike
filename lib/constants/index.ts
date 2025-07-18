@@ -21,7 +21,7 @@ export const signUpDefaultValues = {
 };
 
 export const shippingAddressDefaultValues = {
-  firstName: "",
+  fullName: "",
   streetAddress: "",
   city: "",
   postalCode: "",
