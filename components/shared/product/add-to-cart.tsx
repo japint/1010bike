@@ -6,46 +6,35 @@ import { useToast } from "@/hooks/use-toast";
 import {
   addItemToCart,
   removeItemFromCart,
-  updateItemQuantity,
+  incrementItemQuantity,
+  decrementItemQuantity,
 } from "@/lib/actions/cart.action";
-import {
-  useTransition,
-  useOptimistic,
-  useMemo,
-  useCallback,
-  useRef,
-  useEffect, // Add this import
-} from "react";
+import { useTransition, useOptimistic, useMemo, useCallback } from "react";
 
 const AddToCart = ({ cart, item }: { cart?: Cart; item: CartItem }) => {
   const { toast } = useToast();
   const [isPending, startTransition] = useTransition();
 
-  // Step 3: Add refs for debouncing
-  const toastTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const lastActionRef = useRef<string | null>(null);
-
-  // Step 1: Add optimistic updates for instant UI feedback
+  // Optimistic state for instant UI updates
   const [optimisticCart, updateOptimisticCart] = useOptimistic(
     cart,
-    (
-      state,
-      action: {
-        type: "add" | "increment" | "decrement" | "remove";
-        productId: string;
-      }
-    ) => {
+    (state, action: { type: string; productId: string }) => {
       if (!state) return state;
 
       const items = [...state.items];
       const existingIndex = items.findIndex(
-        (item) => item.productId === action.productId
+        (cartItem) => cartItem.productId === action.productId
       );
 
       switch (action.type) {
         case "add":
           if (existingIndex === -1) {
             items.push({ ...item, qty: 1 });
+          } else {
+            items[existingIndex] = {
+              ...items[existingIndex],
+              qty: items[existingIndex].qty + 1,
+            };
           }
           break;
         case "increment":
@@ -60,9 +49,12 @@ const AddToCart = ({ cart, item }: { cart?: Cart; item: CartItem }) => {
           if (existingIndex !== -1) {
             const newQty = items[existingIndex].qty - 1;
             if (newQty <= 0) {
-              items.splice(existingIndex, 1); // Remove item
+              items.splice(existingIndex, 1);
             } else {
-              items[existingIndex] = { ...items[existingIndex], qty: newQty };
+              items[existingIndex] = {
+                ...items[existingIndex],
+                qty: newQty,
+              };
             }
           }
           break;
@@ -77,7 +69,7 @@ const AddToCart = ({ cart, item }: { cart?: Cart; item: CartItem }) => {
     }
   );
 
-  // Step 2: Memoize existing item calculation
+  // Find existing item
   const existItem = useMemo(
     () =>
       optimisticCart?.items.find(
@@ -86,189 +78,178 @@ const AddToCart = ({ cart, item }: { cart?: Cart; item: CartItem }) => {
     [optimisticCart?.items, item.productId]
   );
 
-  // Step 3: Debounced toast function to prevent spam
-  const showDebouncedToast = useCallback(
-    (message: string, variant: "default" | "destructive" = "default") => {
-      // Clear previous timeout
-      if (toastTimeoutRef.current) {
-        clearTimeout(toastTimeoutRef.current);
-      }
-
-      // Only show toast if it's different from last action
-      if (lastActionRef.current !== message) {
-        lastActionRef.current = message;
-
-        // Debounce toast messages
-        toastTimeoutRef.current = setTimeout(() => {
-          toast({
-            variant,
-            description: message,
-            duration: 2000, // Shorter duration for better UX
-          });
-        }, 300); // 300ms debounce
-      }
-    },
-    [toast]
-  );
-
-  // Step 3: Immediate error toast (no debounce for errors)
-  const showErrorToast = useCallback(
-    (message: string) => {
-      toast({
-        variant: "destructive",
-        description: message,
-        duration: 4000, // Longer duration for errors
-      });
-    },
-    [toast]
-  );
-
-  // Step 2: Memoize handlers to prevent recreation on every render
-  const handleAddToCart = useCallback(async () => {
+  // Add to cart handler
+  const handleAddToCart = useCallback(() => {
     startTransition(async () => {
-      // Update UI immediately inside transition
+      // Update UI immediately
       updateOptimisticCart({ type: "add", productId: item.productId });
 
-      const res = await addItemToCart(item);
-      if (!res || !res.success) {
-        showErrorToast(res?.message || "Failed to add item to cart.");
-        return;
+      try {
+        const res = await addItemToCart(item);
+        if (!res.success) {
+          toast({
+            variant: "destructive",
+            description: res.message,
+          });
+        } else {
+          toast({
+            description: `${item.name} added to cart`,
+          });
+        }
+      } catch (error) {
+        console.error("Add to cart error:", error);
+        toast({
+          variant: "destructive",
+          description: "Failed to add item to cart",
+        });
       }
-      // Step 3: Only show success toast for add action
-      showDebouncedToast(`${item.name} added to cart`);
     });
-  }, [item, updateOptimisticCart, showDebouncedToast, showErrorToast]);
+  }, [item, updateOptimisticCart, toast]);
 
-  const handleIncrement = useCallback(async () => {
+  // Increment quantity handler
+  const handleIncrement = useCallback(() => {
     if (!existItem) return;
 
     startTransition(async () => {
-      // Update UI immediately inside transition
+      // Update UI immediately
       updateOptimisticCart({
         type: "increment",
         productId: existItem.productId,
       });
 
-      const res = await updateItemQuantity(
-        existItem.productId,
-        existItem.qty + 1
-      );
-      if (!res || !res.success) {
-        showErrorToast(res?.message || "Failed to update quantity.");
-        return;
+      try {
+        const res = await incrementItemQuantity(existItem.productId);
+        if (!res.success) {
+          toast({
+            variant: "destructive",
+            description: res.message,
+          });
+        }
+      } catch (error) {
+        console.error("Increment error:", error);
+        toast({
+          variant: "destructive",
+          description: "Failed to update quantity",
+        });
       }
-      // Step 3: Minimal feedback for increment
-      showDebouncedToast("Quantity updated");
     });
-  }, [existItem, updateOptimisticCart, showDebouncedToast, showErrorToast]);
+  }, [existItem, updateOptimisticCart, toast]);
 
-  const handleDecrement = useCallback(async () => {
+  // Decrement quantity handler
+  const handleDecrement = useCallback(() => {
     if (!existItem) return;
 
     startTransition(async () => {
-      // Update UI immediately inside transition
       if (existItem.qty === 1) {
+        // Remove item if quantity is 1
         updateOptimisticCart({
           type: "remove",
           productId: existItem.productId,
         });
+
+        try {
+          const res = await removeItemFromCart(existItem.productId);
+          if (!res.success) {
+            toast({
+              variant: "destructive",
+              description: res.message,
+            });
+          } else {
+            toast({
+              description: "Item removed from cart",
+            });
+          }
+        } catch (error) {
+          console.error("Remove error:", error);
+          toast({
+            variant: "destructive",
+            description: "Failed to remove item",
+          });
+        }
       } else {
+        // Decrease quantity
         updateOptimisticCart({
           type: "decrement",
           productId: existItem.productId,
         });
-      }
 
-      if (existItem.qty === 1) {
-        // If quantity is 1, remove item completely
-        const res = await removeItemFromCart(existItem.productId);
-        if (!res || !res.success) {
-          showErrorToast(res?.message || "Failed to remove item.");
-          return;
+        try {
+          const res = await decrementItemQuantity(existItem.productId);
+          if (!res.success) {
+            toast({
+              variant: "destructive",
+              description: res.message,
+            });
+          }
+        } catch (error) {
+          console.error("Decrement error:", error);
+          toast({
+            variant: "destructive",
+            description: "Failed to update quantity",
+          });
         }
-        // Step 3: Show removal message only once
-        showDebouncedToast("Item removed from cart");
-      } else {
-        // If quantity > 1, just decrease by 1
-        const res = await updateItemQuantity(
-          existItem.productId,
-          existItem.qty - 1
-        );
-        if (!res || !res.success) {
-          showErrorToast(res?.message || "Failed to update quantity.");
-          return;
-        }
-        // Step 3: Minimal feedback for decrement
-        showDebouncedToast("Quantity updated");
       }
     });
-  }, [existItem, updateOptimisticCart, showDebouncedToast, showErrorToast]);
+  }, [existItem, updateOptimisticCart, toast]);
 
-  // Step 2: Memoize button content to prevent recreation
-  const buttonContent = useMemo(() => {
-    if (isPending) {
-      return (
-        <>
-          <Loader2 className="w-4 h-4 animate-spin mr-2" />
-          Adding...
-        </>
-      );
-    }
+  // Render quantity controls if item exists in cart
+  if (existItem) {
     return (
-      <>
-        <Plus className="h-4 w-4 mr-2" />
-        Add To Cart
-      </>
+      <div className="flex items-center gap-2">
+        <Button
+          size="sm"
+          variant="outline"
+          onClick={handleDecrement}
+          disabled={isPending}
+          className="h-8 w-8 p-0"
+        >
+          {isPending ? (
+            <Loader2 className="h-3 w-3 animate-spin" />
+          ) : (
+            <Minus className="h-3 w-3" />
+          )}
+        </Button>
+
+        <span className="min-w-[2rem] text-center font-medium">
+          {existItem.qty}
+        </span>
+
+        <Button
+          size="sm"
+          variant="outline"
+          onClick={handleIncrement}
+          disabled={isPending}
+          className="h-8 w-8 p-0"
+        >
+          {isPending ? (
+            <Loader2 className="h-3 w-3 animate-spin" />
+          ) : (
+            <Plus className="h-3 w-3" />
+          )}
+        </Button>
+      </div>
     );
-  }, [isPending]);
+  }
 
-  // Step 3: Cleanup timeout on unmount
-  useEffect(() => {
-    return () => {
-      if (toastTimeoutRef.current) {
-        clearTimeout(toastTimeoutRef.current);
-      }
-    };
-  }, []);
-
-  return existItem ? (
-    <div className="flex items-center gap-2">
-      <Button
-        className="h-8 w-8"
-        type="button"
-        variant="outline"
-        onClick={handleDecrement}
-        disabled={isPending}
-      >
-        {isPending ? (
-          <Loader2 className="w-4 h-4 animate-spin" />
-        ) : (
-          <Minus className="h-4 w-4" />
-        )}
-      </Button>
-      <span className="px-2 font-medium">{existItem.qty}</span>
-      <Button
-        className="h-8 w-8"
-        type="button"
-        variant="outline"
-        onClick={handleIncrement}
-        disabled={isPending}
-      >
-        {isPending ? (
-          <Loader2 className="w-4 h-4 animate-spin" />
-        ) : (
-          <Plus className="h-4 w-4" />
-        )}
-      </Button>
-    </div>
-  ) : (
+  // Render add to cart button
+  return (
     <Button
-      className="w-full"
-      type="button"
       onClick={handleAddToCart}
       disabled={isPending}
+      className="w-full"
+      size="sm"
     >
-      {buttonContent}
+      {isPending ? (
+        <>
+          <Loader2 className="h-4 w-4 animate-spin mr-2" />
+          Adding...
+        </>
+      ) : (
+        <>
+          <Plus className="h-4 w-4 mr-2" />
+          Add To Cart
+        </>
+      )}
     </Button>
   );
 };

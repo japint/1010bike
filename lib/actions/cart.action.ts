@@ -25,42 +25,32 @@ const calcPrice = (items: CartItem[]) => {
   };
 };
 
-export async function addItemToCart(data: CartItem) {
+export async function addItemToCart(data: CartItem, path?: string) {
   try {
     const sessionCartId = (await cookies()).get("sessionCartId")?.value;
     if (!sessionCartId) {
-      return {
-        success: false,
-        message: "Cart session not found",
-      };
+      return { success: false, message: "Cart session not found" };
     }
 
     const session = await auth();
-    const userId = session?.user?.id ? (session.user.id as string) : undefined;
-
+    const userId = session?.user?.id;
     const item = cartItemSchema.parse(data);
 
-    // Step 4: Combine product check and cart fetch in parallel
+    // Parallel database queries for speed
     const [product, cart] = await Promise.all([
       prisma.product.findFirst({
         where: { id: item.productId },
-        select: { id: true, stock: true, slug: true }, // Select only needed fields
+        select: { id: true, stock: true, slug: true },
       }),
       getMyCart(),
     ]);
 
     if (!product) {
-      return {
-        success: false,
-        message: "Product not found",
-      };
+      return { success: false, message: "Product not found" };
     }
 
     if (product.stock < item.qty) {
-      return {
-        success: false,
-        message: `Only ${product.stock} items available in stock`,
-      };
+      return { success: false, message: `Only ${product.stock} available` };
     }
 
     if (!cart) {
@@ -69,56 +59,36 @@ export async function addItemToCart(data: CartItem) {
 
       await prisma.cart.create({
         data: {
-          sessionCartId: sessionCartId,
+          sessionCartId,
           items: [item],
           itemsPrice: parseFloat(priceData.itemsPrice),
           shippingPrice: parseFloat(priceData.shippingPrice),
           taxPrice: parseFloat(priceData.taxPrice),
           totalPrice: parseFloat(priceData.totalPrice),
-          ...(userId && {
-            user: { connect: { id: userId } },
-          }),
+          ...(userId && { user: { connect: { id: userId } } }),
         },
       });
-
-      // Step 4: Minimal revalidation
-      revalidatePath(`/product/${product.slug}`);
-
-      return {
-        success: true,
-        message: "Item added to cart",
-      };
     } else {
       // Update existing cart
       const existingItems = cart.items as CartItem[];
-      const existingItemIndex = existingItems.findIndex(
+      const existingIndex = existingItems.findIndex(
         (cartItem) => cartItem.productId === item.productId
       );
 
       let updatedItems: CartItem[];
-
-      if (existingItemIndex !== -1) {
-        const existingItem = existingItems[existingItemIndex];
-        const newQuantity = existingItem.qty + item.qty;
-
-        if (product.stock < newQuantity) {
-          return {
-            success: false,
-            message: `Only ${product.stock} items available in stock`,
-          };
+      if (existingIndex !== -1) {
+        const newQty = existingItems[existingIndex].qty + item.qty;
+        if (product.stock < newQty) {
+          return { success: false, message: `Only ${product.stock} available` };
         }
-
         updatedItems = existingItems.map((cartItem, index) =>
-          index === existingItemIndex
-            ? { ...cartItem, qty: newQuantity }
-            : cartItem
+          index === existingIndex ? { ...cartItem, qty: newQty } : cartItem
         );
       } else {
         updatedItems = [...existingItems, item];
       }
 
       const priceData = calcPrice(updatedItems);
-
       await prisma.cart.update({
         where: { id: cart.id },
         data: {
@@ -129,24 +99,17 @@ export async function addItemToCart(data: CartItem) {
           totalPrice: parseFloat(priceData.totalPrice),
         },
       });
-
-      // Step 4: Minimal revalidation
-      revalidatePath(`/product/${product.slug}`);
-
-      return {
-        success: true,
-        message:
-          existingItemIndex !== -1
-            ? "Item quantity updated"
-            : "Item added to cart",
-      };
     }
+
+    // Revalidate pages
+    revalidatePath(`/product/${product.slug}`);
+    revalidatePath("/cart");
+    if (path) revalidatePath(path);
+
+    return { success: true, message: "Added to cart" };
   } catch (error) {
-    console.error("Cart error:", error);
-    return {
-      success: false,
-      message: formatError(error),
-    };
+    console.error("Add to cart error:", error);
+    return { success: false, message: "Failed to add item" };
   }
 }
 
@@ -193,7 +156,7 @@ export async function getMyCart() {
 }
 
 // Make sure you have this function in your cart.action.ts
-export async function removeItemFromCart(productId: string) {
+export async function removeItemFromCart(productId: string, path?: string) {
   try {
     const cart = await getMyCart();
     if (!cart) {
@@ -220,8 +183,9 @@ export async function removeItemFromCart(productId: string) {
       },
     });
 
-    // Step 4: Minimal revalidation
+    // Revalidate pages
     revalidatePath("/cart");
+    if (path) revalidatePath(path);
 
     return {
       success: true,
@@ -231,20 +195,23 @@ export async function removeItemFromCart(productId: string) {
     console.error("Remove item error:", error);
     return {
       success: false,
-      message: formatError(error),
+      message: "Failed to remove item",
     };
   }
 }
 
 // Step 4: Optimized updateItemQuantity
-export async function updateItemQuantity(productId: string, qty: number) {
+export async function updateItemQuantity(
+  productId: string,
+  qty: number,
+  path?: string
+) {
   try {
-    // Step 4: Combine cart and product fetch in parallel
     const [cart, product] = await Promise.all([
       getMyCart(),
       prisma.product.findFirst({
         where: { id: productId },
-        select: { id: true, stock: true }, // Select only needed fields
+        select: { id: true, stock: true, slug: true },
       }),
     ]);
 
@@ -286,8 +253,10 @@ export async function updateItemQuantity(productId: string, qty: number) {
       },
     });
 
-    // Step 4: Minimal revalidation
+    // Always revalidate these important paths
     revalidatePath("/cart");
+    revalidatePath(`/product/${product.slug}`);
+    if (path) revalidatePath(path);
 
     return {
       success: true,
@@ -303,7 +272,7 @@ export async function updateItemQuantity(productId: string, qty: number) {
 }
 
 // Add helper functions for increment/decrement
-export async function incrementItemQuantity(productId: string) {
+export async function incrementItemQuantity(productId: string, path?: string) {
   try {
     const cart = await getMyCart();
     if (!cart) {
@@ -322,17 +291,17 @@ export async function incrementItemQuantity(productId: string) {
     }
 
     // Increment quantity by 1
-    return await updateItemQuantity(productId, item.qty + 1);
+    return await updateItemQuantity(productId, item.qty + 1, path);
   } catch (error) {
     console.error("Increment quantity error:", error);
     return {
       success: false,
-      message: formatError(error),
+      message: "Failed to increment quantity",
     };
   }
 }
 
-export async function decrementItemQuantity(productId: string) {
+export async function decrementItemQuantity(productId: string, path?: string) {
   try {
     const cart = await getMyCart();
     if (!cart) {
@@ -350,14 +319,20 @@ export async function decrementItemQuantity(productId: string) {
       };
     }
 
-    // Decrement quantity by 1, but don't go below 1
-    const newQuantity = Math.max(1, item.qty - 1);
-    return await updateItemQuantity(productId, newQuantity);
+    const newQuantity = item.qty - 1;
+
+    // If quantity would be 0, remove the item instead
+    if (newQuantity <= 0) {
+      return await removeItemFromCart(productId, path);
+    }
+
+    // Otherwise, update the quantity
+    return await updateItemQuantity(productId, newQuantity, path);
   } catch (error) {
     console.error("Decrement quantity error:", error);
     return {
       success: false,
-      message: formatError(error),
+      message: "Failed to decrement quantity",
     };
   }
 }
