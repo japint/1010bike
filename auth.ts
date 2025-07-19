@@ -133,7 +133,31 @@ export const config: NextAuthConfig = {
 
       return token;
     },
-    authorized: async ({ request }) => {
+    authorized: async ({ auth, request }) => {
+      // array of regex patterns of path we want to protect
+      const protectedPaths = [
+        /\/shipping-address/,
+        /\/payment-method/,
+        /\/place-order/,
+        /\/profile/,
+        /\/user\/(.*)/,
+        /\/order\/(.*)/,
+        /\/admin/,
+      ];
+
+      // get the pathname from the request url object
+      const { pathname } = new URL(request.url);
+
+      // check if user is accessing a protected path
+      const isProtectedPath = protectedPaths.some((path) =>
+        path.test(pathname)
+      );
+
+      //  check if user is not authenticated and accessing a protected path
+      if (!auth && isProtectedPath) {
+        return Response.redirect(new URL("/sign-in", request.url));
+      }
+
       // check for session cart cookie
       if (!request.cookies.get("sessionCartId")) {
         // generate new session cart ID cookie
