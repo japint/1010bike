@@ -39,87 +39,94 @@ const PaymentMethodForm = ({
 
   const onSubmit = async (values: z.infer<typeof paymentMethodSchema>) => {
     startTransition(async () => {
-      const res = await updateUserPaymentMethod(values);
+      try {
+        const res = await updateUserPaymentMethod(values);
 
-      if (!res?.success) {
+        if (!res?.success) {
+          toast({
+            variant: "destructive",
+            description: res?.message || "Failed to update payment method",
+          });
+          return;
+        }
+
+        toast({
+          description: "Payment method updated successfully",
+        });
+
+        router.push("/place-order");
+      } catch (error) {
+        console.error("Payment method update error:", error);
         toast({
           variant: "destructive",
-          description: res?.message || "Failed to update payment method",
+          description: "An error occurred while updating payment method",
         });
-        return;
       }
-
-      router.push("/place-order");
     });
   };
 
   return (
-    <>
-      <div className="max-w-md mx-auto space-y-4">
-        <h1 className="h2-bold mt-4">Payment Method</h1>
-        <p className="text-sm text-muted-foreground">
-          Please select the payment method.
-        </p>
-        <Form {...form}>
-          <form
-            method="post"
-            className="space-y-4"
-            onSubmit={form.handleSubmit(onSubmit)}
-          >
-            <div className="flex flex-col gap-5 md:flex-row">
-              <FormField
-                control={form.control}
-                name="type"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormControl>
-                      <RadioGroup
-                        onValueChange={field.onChange}
-                        className="flex flex-col space-y-2"
-                      >
-                        {PAYMENT_METHOD.map((paymentMethod) => (
-                          <FormItem
-                            key={paymentMethod}
-                            className="flex items-center space-x-3 space-y-3"
-                          >
-                            <FormControl>
-                              <RadioGroupItem
-                                value={paymentMethod}
-                                checked={field.value === paymentMethod}
-                              />
-                            </FormControl>
-                            <FormLabel className="font-normal">
-                              {paymentMethod}
-                            </FormLabel>
-                          </FormItem>
-                        ))}
-                      </RadioGroup>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
+    <div className="max-w-md mx-auto space-y-4">
+      <h1 className="h2-bold mt-4">Payment Method</h1>
+      <p className="text-sm text-muted-foreground">
+        Please select the payment method.
+      </p>
 
-            <div className="flex gap-2">
-              <Button type="submit" className="w-full" disabled={isPending}>
-                {isPending ? (
-                  <>
-                    <Loader className="w-4 h-4 animate-spin mr-2" />
-                    Updating...
-                  </>
-                ) : (
-                  <>
-                    <ArrowRight className="w-4 h-4 mr-2" />
-                    Continue
-                  </>
-                )}
-              </Button>
-            </div>
-          </form>
-        </Form>
-      </div>
-    </>
+      <Form {...form}>
+        <form className="space-y-4" onSubmit={form.handleSubmit(onSubmit)}>
+          <FormField
+            control={form.control}
+            name="type"
+            render={({ field }) => (
+              <FormItem className="space-y-3">
+                <FormControl>
+                  <RadioGroup
+                    onValueChange={field.onChange}
+                    defaultValue={field.value}
+                    className="flex flex-col space-y-2"
+                  >
+                    {PAYMENT_METHOD.map((paymentMethod) => (
+                      <div
+                        key={paymentMethod}
+                        className="flex items-center space-x-2"
+                      >
+                        <RadioGroupItem
+                          value={paymentMethod}
+                          id={paymentMethod}
+                        />
+                        <FormLabel
+                          htmlFor={paymentMethod}
+                          className="font-normal cursor-pointer"
+                        >
+                          {paymentMethod}
+                        </FormLabel>
+                      </div>
+                    ))}
+                  </RadioGroup>
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <div className="flex gap-2">
+            <Button type="submit" className="w-full" disabled={isPending}>
+              {isPending ? (
+                <>
+                  <Loader className="w-4 h-4 animate-spin mr-2" />
+                  Updating...
+                </>
+              ) : (
+                <>
+                  <ArrowRight className="w-4 h-4 mr-2" />
+                  Continue
+                </>
+              )}
+            </Button>
+          </div>
+        </form>
+      </Form>
+    </div>
   );
 };
 
