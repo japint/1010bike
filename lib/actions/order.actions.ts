@@ -56,15 +56,15 @@ export const createOrder = async () => {
       totalPrice: cart.totalPrice,
     });
     // create a transaction to create order and order items
-    const insertedOrderIdd = await prisma.$transaction(async (tx) => {
+    const insertedOrder = await prisma.$transaction(async (tx) => {
       // Create the order
-      const insertedOrder = await tx.order.create({
+      const newOrder = await tx.order.create({
         data: order,
       });
       //   Create order items from the cart items
       for (const item of cart.items as CartItem[]) {
         await tx.orderItem.create({
-          data: { ...item, price: item.price, orderId: insertedOrder.id },
+          data: { ...item, price: item.price, orderId: newOrder.id },
         });
       }
       //   create cart
@@ -79,14 +79,17 @@ export const createOrder = async () => {
         },
       });
 
-      return insertedOrder;
+      return newOrder;
     });
-    if (!insertedOrderIdd) throw new Error("Order creation failed");
+    if (!insertedOrder) {
+      throw new Error("Order creation failed");
+    }
+
     return {
       success: true,
       message: "Order created successfully",
-      orderId: insertedOrderIdd.id,
-      redirectTo: `/order/${insertedOrderIdd}`,
+      orderId: insertedOrder.id.toString(),
+      redirectTo: `/order/${insertedOrder.id.toString()}`,
     };
   } catch (error) {
     if (isRedirectError(error)) {
