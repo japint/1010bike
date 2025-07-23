@@ -1,6 +1,6 @@
 import { Metadata } from "next";
-// import { orderById } from "@/lib/actions/order.actions";
-// import { notFound } from "next/navigation";
+import { getOrderById } from "@/lib/actions/order.actions";
+import { notFound } from "next/navigation";
 // import { ShippingAddress } from "@/types";
 
 export const metadata: Metadata = {
@@ -10,9 +10,10 @@ export const metadata: Metadata = {
 const OrderDetailsPage = async (props: { params: Promise<{ id: string }> }) => {
   const { id } = await props.params;
 
-  console.log("🆔 Order page - Raw params:", props.params);
-  console.log("🔍 Order page - Extracted ID:", id);
-  console.log("🏷️ Order page - ID type:", typeof id);
+  const order = await getOrderById(id);
+  if (!order) {
+    notFound();
+  }
 
   return (
     <div className="max-w-4xl mx-auto p-6">
@@ -23,6 +24,9 @@ const OrderDetailsPage = async (props: { params: Promise<{ id: string }> }) => {
         </p>
         <p>
           <strong>ID Type:</strong> {typeof id}
+        </p>
+        <p>
+          <strong>Total Price:</strong> {order.totalPrice.toString()}
         </p>
       </div>
     </div>
