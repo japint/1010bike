@@ -7,7 +7,7 @@ export const paypal = {
 };
 
 // generate access token for PayPal API
-export async function generateAccessToken() {
+async function generateAccessToken() {
   const { PAYPAL_CLIENT_ID, PAYPAL_APP_SECRET } = process.env;
   const auth = Buffer.from(`${PAYPAL_CLIENT_ID}:${PAYPAL_APP_SECRET}`).toString(
     "base64"
@@ -29,3 +29,5 @@ export async function generateAccessToken() {
     throw new Error(`Failed to generate access token: ${errorMessage}`);
   }
 }
+
+export { generateAccessToken };
