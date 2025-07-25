@@ -6,7 +6,11 @@ const globalForPrisma = globalThis as unknown as { prisma: PrismaClient };
 const createPrismaClient = () => {
   try {
     return new PrismaClient({
-      log: process.env.NODE_ENV === "development" ? ["query", "error", "warn"] : ["error"],
+      // TODO: Remove query logging later - currently showing all SQL queries in terminal
+      log:
+        process.env.NODE_ENV === "development"
+          ? ["query", "error", "warn"]
+          : ["error"],
     });
   } catch (error) {
     console.error("Failed to create Prisma client:", error);

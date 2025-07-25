@@ -15,9 +15,7 @@ const PlaceOrderForm = () => {
   const handlePlaceOrder = () => {
     startTransition(async () => {
       try {
-        console.log("🚀 Starting order creation...");
         const result = await createOrder();
-        console.log("📦 Order result:", result);
 
         if (!result || !result.success) {
           toast({
@@ -35,14 +33,9 @@ const PlaceOrderForm = () => {
           description: result.message,
         });
 
-        // Debug log the order ID
-        console.log("🆔 Order ID:", result.orderId);
-        console.log("🔄 Redirect URL:", result.redirectTo);
-
         // Redirect to order confirmation page with proper ID
         if (result.orderId) {
           const orderUrl = `/order/${result.orderId}`;
-          console.log("🎯 Navigating to:", orderUrl);
           router.push(orderUrl);
         } else if (result.redirectTo) {
           router.push(result.redirectTo);
