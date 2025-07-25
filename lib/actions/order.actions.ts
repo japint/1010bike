@@ -7,7 +7,8 @@ import { getMyCart } from "./cart.action";
 import { getUserById } from "./user.action";
 import { insertOrderSchema } from "../validators";
 import { prisma } from "@/db/prisma";
-import { CartItem } from "@/types";
+import { Decimal } from "@prisma/client/runtime/library";
+import { CartItem, ShippingAddress } from "@/types";
 
 // create order and create the order items
 export const createOrder = async () => {
@@ -103,13 +104,76 @@ export const createOrder = async () => {
 
 // get order by ID
 export async function getOrderById(orderId: string) {
-  const data = await prisma.order.findFirst({
-    where: { id: orderId },
-    include: {
-      user: true,
-      orderItems: true,
-    },
-  });
+  try {
+    // Check if prisma client is properly initialized
+    if (!prisma) {
+      console.error("Prisma client not initialized");
+      return null;
+    }
 
-  return convertToPlainObject(data);
+    const data = await prisma.order.findFirst({
+      where: { id: orderId },
+      include: {
+        user: {
+          select: {
+            id: true,
+            email: true,
+          },
+        },
+        orderitems: true,
+      },
+    });
+
+    if (!data) return null;
+
+    // Convert the data to match the Order type
+    const convertedOrder = {
+      id: data.id,
+      userId: data.userId,
+      itemsPrice: data.itemsPrice.toString(),
+      shippingPrice: data.shippingPrice.toString(),
+      taxPrice: data.taxPrice.toString(),
+      totalPrice: data.totalPrice.toString(),
+      paymentMethod: data.paymentMethod,
+      shippingAddress: data.shippingAddress as ShippingAddress, // Cast JSON to ShippingAddress type
+      createdAt: data.createdAt,
+      isPaid: data.isPaid,
+      paidAt: null, // Field doesn't exist in schema, set to null
+      isDelivered: data.isDelivered,
+      deliveredAt: data.deliveredAt,
+      orderitems: data.orderitems.map(
+        (item: {
+          productId: string;
+          slug: string;
+          image: string;
+          name: string;
+          price: Decimal;
+          qty: number;
+        }) => ({
+          productId: item.productId,
+          slug: item.slug,
+          image: item.image,
+          name: item.name,
+          price: item.price.toString(),
+          qty: item.qty,
+        })
+      ),
+      user: data.user,
+    };
+
+    return convertToPlainObject(convertedOrder);
+  } catch (error) {
+    console.error("Error fetching order by ID:", error);
+    // Return null as fallback to prevent app crash
+    return null;
+  } finally {
+    // Only disconnect if prisma client exists and has the method
+    try {
+      if (prisma && typeof prisma.$disconnect === "function") {
+        await prisma.$disconnect();
+      }
+    } catch (disconnectError) {
+      console.error("Error disconnecting from database:", disconnectError);
+    }
+  }
 }
