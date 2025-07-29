@@ -63,16 +63,30 @@ const OrderDetailsTable = ({
   };
 
   const handleCreatePayPalOrder = async () => {
-    const res = await createPaypalOrder(order.id);
+    try {
+      const res = await createPaypalOrder(order.id);
+      
+      console.log("CreatePayPal Response:", res); // Debug log
+      
+      if (!res.success) {
+        toast({
+          variant: "destructive",
+          description: res.message,
+        });
+        // Throw error to prevent PayPal from proceeding without order ID
+        throw new Error(res.message || "Failed to create PayPal order");
+      }
 
-    if (!res.success) {
+      console.log("PayPal Order ID:", res.data); // Debug log
+      return res.data;
+    } catch (error) {
+      console.error("Error in handleCreatePayPalOrder:", error);
       toast({
         variant: "destructive",
-        description: res.message,
+        description: "Failed to create PayPal order. Please try again.",
       });
+      throw error;
     }
-
-    return res.data;
   };
 
   const handleApprovePayPalOrder = async (data: { orderID: string }) => {
