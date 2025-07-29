@@ -246,7 +246,7 @@ export const approvePaypalOrder = async (
     }
 
     // Update order to paid
-    updateOrderToPaid(orderId, {
+    const updatedOrder = await updateOrderToPaid(orderId, {
       status: captureData.status,
       email_address: captureData.payer.email_address,
       id: captureData.id,
@@ -259,6 +259,7 @@ export const approvePaypalOrder = async (
     return {
       success: true,
       message: "Your order has been approved",
+      data: updatedOrder, // Return the updated order data
     };
   } catch (error) {
     console.error("Error approving PayPal order:", error);
@@ -320,13 +321,50 @@ const updateOrderToPaid = async (
         orderitems: true,
         user: {
           select: {
-            name: true,
+            id: true,
             email: true,
           },
         },
       },
     });
     if (!updatedOrder) throw new Error("Updated order not found");
+    
+    // Convert the data to match the Order type (similar to getOrderById)
+    const convertedOrder = {
+      id: updatedOrder.id,
+      userId: updatedOrder.userId,
+      itemsPrice: updatedOrder.itemsPrice.toString(),
+      shippingPrice: updatedOrder.shippingPrice.toString(),
+      taxPrice: updatedOrder.taxPrice.toString(),
+      totalPrice: updatedOrder.totalPrice.toString(),
+      paymentMethod: updatedOrder.paymentMethod,
+      shippingAddress: updatedOrder.shippingAddress as ShippingAddress,
+      createdAt: updatedOrder.createdAt,
+      isPaid: updatedOrder.isPaid,
+      paidAt: updatedOrder.paidAt,
+      isDelivered: updatedOrder.isDelivered,
+      deliveredAt: updatedOrder.deliveredAt,
+      orderitems: updatedOrder.orderitems.map(
+        (item: {
+          productId: string;
+          slug: string;
+          image: string;
+          name: string;
+          price: Decimal;
+          qty: number;
+        }) => ({
+          productId: item.productId,
+          slug: item.slug,
+          image: item.image,
+          name: item.name,
+          price: item.price.toString(),
+          qty: item.qty,
+        })
+      ),
+      user: updatedOrder.user,
+    };
+
+    return convertToPlainObject(convertedOrder);
   } catch (error) {
     console.error("Error updating order to paid:", error);
     throw error;
