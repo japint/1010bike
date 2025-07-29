@@ -15,6 +15,7 @@ import { Order } from "@/types";
 import Link from "next/link";
 import Image from "next/image";
 import { useToast } from "@/hooks/use-toast";
+import { useState } from "react";
 import {
   PayPalButtons,
   PayPalScriptProvider,
@@ -26,12 +27,13 @@ import {
 } from "@/lib/actions/order.actions";
 
 const OrderDetailsTable = ({
-  order,
+  order: initialOrder,
   paypalClientId,
 }: {
   order: Order;
   paypalClientId: string;
 }) => {
+  const [order, setOrder] = useState(initialOrder); // Local state for order
   const {
     id,
     shippingAddress,
@@ -42,10 +44,10 @@ const OrderDetailsTable = ({
     totalPrice,
     paymentMethod,
     isDelivered,
-    isPaid,
-    paidAt,
     deliveredAt,
   } = order;
+
+  const { isPaid, paidAt } = order; // Get current payment status from state
 
   const { toast } = useToast();
 
@@ -93,11 +95,9 @@ const OrderDetailsTable = ({
       description: res.message,
     });
 
-    // Refresh the page to show updated payment status
-    if (res.success) {
-      setTimeout(() => {
-        window.location.reload();
-      }, 1500); // Wait 1.5 seconds to show the success toast
+    // Update local state with the actual updated order data from server
+    if (res.success && res.data) {
+      setOrder(res.data); // Use the complete updated order from the server
     }
   };
 
