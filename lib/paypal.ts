@@ -2,11 +2,7 @@ const base = process.env.PAYPAL_API_URL || "https://api-m.sandbox.paypal.com";
 
 export const paypal = {
   createOrder: async function createOrder(price: number) {
-    console.log("PayPal createOrder called with price:", price); // Debug log
-
     const accessToken = await generateAccessToken();
-    console.log("Access token generated:", accessToken ? "Yes" : "No"); // Debug log
-
     const url = `${base}/v2/checkout/orders`;
 
     const response = await fetch(url, {
@@ -28,11 +24,7 @@ export const paypal = {
       }),
     });
 
-    console.log("PayPal API response status:", response.status); // Debug log
-    const result = await handleResponse(response);
-    console.log("PayPal order result:", result); // Debug log
-
-    return result;
+    return handleResponse(response);
   },
   capturePayment: async function capturePayment(orderId: string) {
     const accessToken = await generateAccessToken();
@@ -53,12 +45,6 @@ export const paypal = {
 // generate access token for PayPal API
 async function generateAccessToken() {
   const { PAYPAL_CLIENT_ID, PAYPAL_APP_SECRET } = process.env;
-
-  console.log("PayPal credentials check:", {
-    clientId: PAYPAL_CLIENT_ID ? "Set" : "Missing",
-    secret: PAYPAL_APP_SECRET ? "Set" : "Missing",
-  }); // Debug log
-
   const auth = Buffer.from(`${PAYPAL_CLIENT_ID}:${PAYPAL_APP_SECRET}`).toString(
     "base64"
   );
@@ -72,11 +58,7 @@ async function generateAccessToken() {
     },
   });
 
-  console.log("Access token response status:", response.status); // Debug log
-
   const jsonData = await handleResponse(response);
-  console.log("Access token obtained:", jsonData.access_token ? "Yes" : "No"); // Debug log
-
   return jsonData.access_token;
 }
 

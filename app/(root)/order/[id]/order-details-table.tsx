@@ -65,9 +65,7 @@ const OrderDetailsTable = ({
   const handleCreatePayPalOrder = async () => {
     try {
       const res = await createPaypalOrder(order.id);
-      
-      console.log("CreatePayPal Response:", res); // Debug log
-      
+
       if (!res.success) {
         toast({
           variant: "destructive",
@@ -77,7 +75,6 @@ const OrderDetailsTable = ({
         throw new Error(res.message || "Failed to create PayPal order");
       }
 
-      console.log("PayPal Order ID:", res.data); // Debug log
       return res.data;
     } catch (error) {
       console.error("Error in handleCreatePayPalOrder:", error);
@@ -95,6 +92,13 @@ const OrderDetailsTable = ({
       variant: res.success ? "default" : "destructive",
       description: res.message,
     });
+
+    // Refresh the page to show updated payment status
+    if (res.success) {
+      setTimeout(() => {
+        window.location.reload();
+      }, 1500); // Wait 1.5 seconds to show the success toast
+    }
   };
 
   return (

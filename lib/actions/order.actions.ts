@@ -183,22 +183,14 @@ export async function getOrderById(orderId: string) {
 // create a new paypal order
 export const createPaypalOrder = async (orderId: string) => {
   try {
-    console.log("Creating PayPal order for orderId:", orderId); // Debug log
-
     // get order from database
     const order = await prisma.order.findFirst({
       where: { id: orderId },
     });
 
-    console.log("Order found:", order ? "Yes" : "No"); // Debug log
-
     if (order) {
-      console.log("Order total price:", order.totalPrice); // Debug log
-
       // Create PayPal order
       const paypalOrder = await paypal.createOrder(Number(order.totalPrice));
-
-      console.log("PayPal order created:", paypalOrder); // Debug log
 
       // update order with PayPal order ID
       await prisma.order.update({
