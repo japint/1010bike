@@ -97,7 +97,7 @@ const sampleData = {
       slug: "trinx-m800-mtb",
       category: "Bikes",
       description: "High-performance mountain bike for rugged terrains.",
-      images: ["/images/sample-products/p5-golden.png"],
+      images: ["/images/sample-products/p5-gold.png"],
       price: 79.99,
       brand: "Trinx",
       rating: 4.7,
