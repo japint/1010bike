@@ -69,7 +69,7 @@ const sampleData = {
       rating: 4.9,
       numReviews: 3,
       stock: 0,
-      isFeatured: false,
+      isFeatured: true,
       banner: null,
     },
     {
@@ -89,7 +89,7 @@ const sampleData = {
       rating: 3.6,
       numReviews: 5,
       stock: 10,
-      isFeatured: false,
+      isFeatured: true,
       banner: null,
     },
     {
@@ -97,10 +97,7 @@ const sampleData = {
       slug: "trinx-m800-mtb",
       category: "Bikes",
       description: "High-performance mountain bike for rugged terrains.",
-      images: [
-        "/images/sample-products/p6-27-5er.png",
-        "/images/sample-products/p6-29er.png",
-      ],
+      images: ["/images/sample-products/p5-gold.png"],
       price: 79.99,
       brand: "Trinx",
       rating: 4.7,
