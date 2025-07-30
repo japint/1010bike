@@ -14,8 +14,8 @@ const UserLayout = ({ children }: Readonly<{ children: React.ReactNode }>) => {
               <Image
                 src="/images/1010-1.svg"
                 alt={APP_NAME}
-                width={80}
-                height={80}
+                width={70}
+                height={70}
               />
             </Link>
             <MainNav className="mx-6" />

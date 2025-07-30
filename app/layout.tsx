@@ -14,6 +14,9 @@ export const metadata: Metadata = {
   },
   description: `${APP_DESCRIPTION}`,
   metadataBase: new URL(SERVER_URL),
+  icons: {
+    icon: "/1010-1.ico",
+  },
 };
 
 export default function RootLayout({
