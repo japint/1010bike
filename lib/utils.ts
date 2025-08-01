@@ -77,11 +77,24 @@ const CURRENCY_FORMATTER = new Intl.NumberFormat("en-US", {
 });
 
 // format currency using the formatter above
-export function formatCurrency(amount: number | string | null) {
+export function formatCurrency(amount: number | string | null | unknown) {
   if (typeof amount === "number") {
     return CURRENCY_FORMATTER.format(amount);
   } else if (typeof amount === "string") {
     return CURRENCY_FORMATTER.format(Number(amount));
+  } else if (
+    typeof amount === "object" &&
+    amount !== null &&
+    "toNumber" in amount &&
+    typeof (amount as { toNumber: unknown }).toNumber === "function"
+  ) {
+    // Handle Prisma Decimal type
+    return CURRENCY_FORMATTER.format(
+      (amount as { toNumber: () => number }).toNumber()
+    );
+  } else if (amount && amount.toString) {
+    // Fallback: try to convert to string then number
+    return CURRENCY_FORMATTER.format(Number(amount.toString()));
   } else {
     return "NaN";
   }
