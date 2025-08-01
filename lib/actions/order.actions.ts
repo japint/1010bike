@@ -11,6 +11,7 @@ import { Decimal } from "@prisma/client/runtime/library";
 import { CartItem, ShippingAddress, PaymentResult } from "@/types";
 import { paypal } from "../paypal";
 import { revalidatePath } from "next/cache";
+import { PAGE_SIZE } from "../constants";
 
 // create order and create the order items
 export const createOrder = async () => {
@@ -328,7 +329,7 @@ const updateOrderToPaid = async (
       },
     });
     if (!updatedOrder) throw new Error("Updated order not found");
-    
+
     // Convert the data to match the Order type (similar to getOrderById)
     const convertedOrder = {
       id: updatedOrder.id,
@@ -369,4 +370,29 @@ const updateOrderToPaid = async (
     console.error("Error updating order to paid:", error);
     throw error;
   }
+};
+
+// get users orders
+export const getMyOrders = async ({
+  limit = PAGE_SIZE,
+  page,
+}: {
+  limit?: number;
+  page: number;
+}) => {
+  const session = await auth();
+  if (!session) throw new Error("User not authenticated");
+
+  const data = await prisma.order.findMany({
+    where: { userId: session.user.id! },
+    orderBy: { createdAt: "desc" },
+    take: limit,
+    skip: (page - 1) * limit,
+  });
+
+  const dataCount = await prisma.order.count({
+    where: { userId: session.user.id! },
+  });
+
+  return { data, totalPages: Math.ceil(dataCount / limit) };
 };
