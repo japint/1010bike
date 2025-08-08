@@ -95,7 +95,7 @@ export const config: NextAuthConfig = {
       return session;
     },
 
-    async jwt({ token, user, trigger }) {
+    async jwt({ token, user, trigger, session }) {
       // If user is signing in, persist user data into token
       if (user && user.name === "NO_NAME") {
         token.name = user.email!.split("@")[0];
@@ -129,6 +129,11 @@ export const config: NextAuthConfig = {
             });
           }
         }
+      }
+
+      // handle session updates
+      if (session?.user.name && trigger === "update") {
+        token.name = session.user.name;
       }
 
       return token;
