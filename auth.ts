@@ -7,22 +7,6 @@ import type { NextAuthConfig } from "next-auth";
 import { NextResponse } from "next/server";
 import CredentialsProvider from "next-auth/providers/credentials";
 
-// Extend NextAuth types
-declare module "next-auth" {
-  interface User {
-    role?: string;
-  }
-  interface Session {
-    user: {
-      id?: string;
-      name?: string | null;
-      email?: string | null;
-      image?: string | null;
-      role?: string;
-    };
-  }
-}
-
 export const config: NextAuthConfig = {
   pages: {
     signIn: "/sign-in",
@@ -134,6 +118,10 @@ export const config: NextAuthConfig = {
       // handle session updates
       if (session?.user.name && trigger === "update") {
         token.name = session.user.name;
+      }
+
+      if (user) {
+        token.role = user.role; // Make sure role is in the JWT token
       }
 
       return token;
