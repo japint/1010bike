@@ -19,13 +19,13 @@ const Charts = ({
       >
         <XAxis
           dataKey="month"
-          stroke="#8884d8"
+          stroke="#0d0b36"
           fontSize={12}
           tickLine={false}
           axisLine={false}
         />
         <YAxis
-          stroke="#8884d8"
+          stroke="#0d0b36"
           fontSize={12}
           tickLine={false}
           axisLine={false}
