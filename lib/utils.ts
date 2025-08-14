@@ -71,8 +71,8 @@ export function round2(value: number | string) {
   }
 }
 
-const CURRENCY_FORMATTER = new Intl.NumberFormat("en-US", {
-  currency: "USD",
+const CURRENCY_FORMATTER = new Intl.NumberFormat("en-PH", {
+  currency: "PHP",
   style: "currency",
   minimumFractionDigits: 2,
 });
@@ -97,12 +97,12 @@ export function formatCurrency(amount: number | string | null | unknown) {
     // Fallback: try to convert to string then number
     return CURRENCY_FORMATTER.format(Number(amount.toString()));
   } else {
-    return "NaN";
+    return "₱0.00";
   }
 }
 
 // Format Number
-const NUMBER_FORMATTER = new Intl.NumberFormat("en-US");
+const NUMBER_FORMATTER = new Intl.NumberFormat("en-PH");
 
 export function formatNumber(number: number) {
   return NUMBER_FORMATTER.format(number);

@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/table";
 import { getOrderSummary } from "@/lib/actions/order.actions";
 import { formatCurrency, formatDateTime, formatNumber } from "@/lib/utils";
-import { BadgeDollarSign, Barcode, CreditCard, Users } from "lucide-react";
+import { CreditCard, ScanBarcode, Users, PhilippinePeso } from "lucide-react";
 import { Metadata } from "next";
 import Link from "next/link";
 import Charts from "./charts";
@@ -37,7 +37,7 @@ const AdminOverviewPage = async () => {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
-            <BadgeDollarSign />
+            <PhilippinePeso />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
@@ -72,7 +72,7 @@ const AdminOverviewPage = async () => {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Products</CardTitle>
-            <Barcode />
+            <ScanBarcode />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
