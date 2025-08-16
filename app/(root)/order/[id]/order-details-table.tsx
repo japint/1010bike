@@ -123,6 +123,10 @@ const OrderDetailsTable = ({
               variant: res.success ? "default" : "destructive",
               description: res.message,
             });
+            // Update local order state if successful
+            if (res.success && res.data) {
+              setOrder(res.data);
+            }
           })
         }
       >
@@ -147,6 +151,10 @@ const OrderDetailsTable = ({
               variant: res.success ? "default" : "destructive",
               description: res.message,
             });
+            // Update local state with the updated order data
+            if (res.success && res.data) {
+              setOrder(res.data);
+            }
           })
         }
       >
