@@ -480,3 +480,87 @@ export async function deleteOrder(id: string) {
     return { success: false, message: formatError(error) };
   }
 }
+
+// update COD order to paid
+export async function updateOrderToPaidCOD(orderId: string) {
+  try {
+    const updatedOrder = await updateOrderToPaid(orderId);
+    revalidatePath(`/order/${orderId}`);
+    return {
+      success: true,
+      message: "Order marked as paid",
+      data: updatedOrder,
+    };
+  } catch (error) {
+    return { success: false, message: formatError(error) };
+  }
+}
+
+// update COD order to delivered
+export async function deliverOrder(orderId: string) {
+  try {
+    const order = await prisma.order.findFirst({
+      where: { id: orderId },
+      include: {
+        orderitems: true,
+        user: { select: { id: true, email: true } },
+      },
+    });
+    if (!order) throw new Error("Order not found");
+    if (!order.isPaid) throw new Error("Order is not paid");
+
+    const updatedOrder = await prisma.order.update({
+      where: { id: orderId },
+      data: { isDelivered: true, deliveredAt: new Date() },
+      include: {
+        orderitems: true,
+        user: { select: { id: true, email: true } },
+      },
+    });
+
+    // Convert the data to match the Order type
+    const convertedOrder = {
+      id: updatedOrder.id,
+      userId: updatedOrder.userId,
+      itemsPrice: updatedOrder.itemsPrice.toString(),
+      shippingPrice: updatedOrder.shippingPrice.toString(),
+      taxPrice: updatedOrder.taxPrice.toString(),
+      totalPrice: updatedOrder.totalPrice.toString(),
+      paymentMethod: updatedOrder.paymentMethod,
+      shippingAddress: updatedOrder.shippingAddress as ShippingAddress,
+      createdAt: updatedOrder.createdAt,
+      isPaid: updatedOrder.isPaid,
+      paidAt: updatedOrder.paidAt,
+      isDelivered: updatedOrder.isDelivered,
+      deliveredAt: updatedOrder.deliveredAt,
+      orderitems: updatedOrder.orderitems.map(
+        (item: {
+          productId: string;
+          slug: string;
+          image: string;
+          name: string;
+          price: Decimal;
+          qty: number;
+        }) => ({
+          productId: item.productId,
+          slug: item.slug,
+          image: item.image,
+          name: item.name,
+          price: item.price.toString(),
+          qty: item.qty,
+        })
+      ),
+      user: updatedOrder.user,
+    };
+
+    revalidatePath(`/order/${orderId}`);
+
+    return {
+      success: true,
+      message: "Order marked as delivered",
+      data: convertToPlainObject(convertedOrder),
+    };
+  } catch (error) {
+    return { success: false, message: formatError(error) };
+  }
+}
