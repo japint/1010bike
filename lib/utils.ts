@@ -1,6 +1,7 @@
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 import qs from "query-string";
+import { PaymentResult, ShippingAddress } from "@/types";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -170,4 +171,38 @@ export function formUrlQuery({
   return qs.stringify(query, {
     skipNull: true,
   });
+}
+
+// Order and OrderItem type definitions
+export interface Order {
+  id: string;
+  userId: string;
+  itemsPrice: string | number;
+  shippingPrice: string | number;
+  taxPrice: string | number;
+  totalPrice: string | number;
+  paymentMethod: string;
+  shippingAddress: ShippingAddress;
+  createdAt: Date;
+  isPaid: boolean;
+  paidAt: Date | null;
+  isDelivered: boolean;
+  deliveredAt: Date | null;
+  orderitems: OrderItem[];
+  user?: {
+    id: string;
+    email: string;
+    name?: string;
+  };
+  paymentResult?: PaymentResult;
+}
+
+export interface OrderItem {
+  productId: string;
+  slug: string;
+  image: string;
+  name: string;
+  price: string | number;
+  qty: number;
+  orderId?: string;
 }
