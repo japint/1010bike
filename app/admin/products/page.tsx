@@ -10,6 +10,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import Pagination from "@/components/shared/pagination";
 
 const AdminProductsPage = async (props: {
   searchParams: Promise<{ page: string; query: string; category: string }>;
@@ -68,6 +69,9 @@ const AdminProductsPage = async (props: {
           ))}
         </TableBody>
       </Table>
+      {products?.totalPages && products.totalPages > 1 && (
+        <Pagination page={page} totalPages={products.totalPages} />
+      )}
     </div>
   );
 };
