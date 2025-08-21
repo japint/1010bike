@@ -206,3 +206,25 @@ export interface OrderItem {
   qty: number;
   orderId?: string;
 }
+
+// format rating from Decimal to number with 1 decimal place
+export function formatRating(rating: unknown): string {
+  if (typeof rating === "number") {
+    return rating.toFixed(1);
+  } else if (typeof rating === "string") {
+    return Number(rating).toFixed(1);
+  } else if (
+    typeof rating === "object" &&
+    rating !== null &&
+    "toNumber" in rating &&
+    typeof (rating as { toNumber: unknown }).toNumber === "function"
+  ) {
+    // Handle Prisma Decimal type
+    return (rating as { toNumber: () => number }).toNumber().toFixed(1);
+  } else if (rating && rating.toString) {
+    // Fallback: try to convert to string then number
+    return Number(rating.toString()).toFixed(1);
+  } else {
+    return "0.0";
+  }
+}
