@@ -19,9 +19,9 @@ export const insertProductSchema = z.object({
     .string()
     .min(3, "Description must be at least 3 characters long"),
   stock: z.coerce.number(),
-  images: z.array(z.string()).min(1, "At least one image is required"),
-  isFeatured: z.boolean().optional(),
-  banner: z.string().nullable(),
+  // images: z.array(z.string()).min(1, "At least one image is required"),
+  // isFeatured: z.boolean().optional(),
+  // banner: z.string().nullable(),
   price: currency,
 });
 
