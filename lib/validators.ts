@@ -9,25 +9,37 @@ const currency = z
     "Price must be a valid number with two decimal places"
   );
 
+// Base schema with consistent types
+const productBaseSchema = z.object({
+  name: z.string().min(3, "Name must be at least 3 characters"),
+  slug: z.string().min(3, "Slug must be at least 3 characters"),
+  category: z.string().min(3, "Category must be at least 3 characters"),
+  brand: z.string().min(3, "Brand must be at least 3 characters"),
+  description: z.string().min(3, "Description must be at least 3 characters"),
+  stock: z.number(),
+  images: z.array(z.string()).min(1, "Product must have at least one image"),
+  isFeatured: z.boolean(),
+  banner: z.string().nullable(),
+  price: z.string(),
+});
+
 // Schema for inserting a product
 export const insertProductSchema = z.object({
-  name: z.string().min(3, "Name must be at least 3 characters long"),
-  slug: z.string().min(3, "Slug must be at least 3 characters long"),
-  category: z.string().min(1, "Category is required"),
-  brand: z.string().min(1, "Brand is required"),
-  description: z
-    .string()
-    .min(3, "Description must be at least 3 characters long"),
-  stock: z.coerce.number(),
-  images: z.array(z.string()).min(1, "At least one image is required"),
-  isFeatured: z.boolean().optional(),
+  name: z.string().min(3, "Name must be at least 3 characters"),
+  slug: z.string().min(3, "Slug must be at least 3 characters"),
+  category: z.string().min(3, "Category must be at least 3 characters"),
+  brand: z.string().min(3, "Brand must be at least 3 characters"),
+  description: z.string().min(3, "Description must be at least 3 characters"),
+  stock: z.number().min(0, "Stock must be a positive number"),
+  images: z.array(z.string()).min(1, "Product must have at least one image"),
+  isFeatured: z.boolean(),
   banner: z.string().nullable(),
   price: currency,
 });
 
 // Schema for updating products
-export const updateProductSchema = insertProductSchema.extend({
-  id: z.string().min(1, "Product ID is required"),
+export const updateProductSchema = productBaseSchema.extend({
+  id: z.string().min(1, "Id is required"),
 });
 
 // schema for signing users in
