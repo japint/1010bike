@@ -40,6 +40,8 @@ export const insertProductSchema = z.object({
 // Schema for updating products
 export const updateProductSchema = productBaseSchema.extend({
   id: z.string().min(1, "Id is required"),
+  rating: z.string().optional(),
+  createdAt: z.date().optional(),
 });
 
 // schema for signing users in
