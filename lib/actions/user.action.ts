@@ -4,6 +4,7 @@ import {
   signInFormSchema,
   signUpFormSchema,
   paymentMethodSchema,
+  updateUserSchema,
 } from "@/lib/validators";
 import { auth, signIn, signOut } from "@/auth";
 import { hashSync } from "bcrypt-ts-edge";
@@ -221,6 +222,23 @@ export async function deleteUser(id: string) {
 
     revalidatePath("/admin/users");
     return { success: true, message: "User deleted successfully" };
+  } catch (error) {
+    return { success: false, message: formatError(error) };
+  }
+}
+
+// Update a user (admin only)
+export async function updateUser(user: z.infer<typeof updateUserSchema>) {
+  try {
+    await prisma.user.update({
+      where: { id: user.id },
+      data: {
+        name: user.name,
+        role: user.role,
+      },
+    });
+    revalidatePath("/admin/users");
+    return { success: true, message: "User updated successfully" };
   } catch (error) {
     return { success: false, message: formatError(error) };
   }

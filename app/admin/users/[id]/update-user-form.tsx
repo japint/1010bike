@@ -18,10 +18,11 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
+import { updateUser } from "@/lib/actions/user.action";
 import { USER_ROLES } from "@/lib/constants";
 import { updateUserSchema } from "@/lib/validators";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useRouter } from "next/router";
+import { useRouter } from "next/navigation";
 import { ControllerRenderProps, useForm } from "react-hook-form";
 import { z } from "zod";
 
@@ -30,15 +31,37 @@ const UpdateUserForm = ({
 }: {
   user: z.infer<typeof updateUserSchema>;
 }) => {
-  //   const router = useRouter();
-  //   const { toast } = useToast();
+  const router = useRouter();
+  const { toast } = useToast();
 
   const form = useForm<z.infer<typeof updateUserSchema>>({
     resolver: zodResolver(updateUserSchema),
     defaultValues: user,
   });
 
-  const onSubmit = () => {
+  const onSubmit = async (values: z.infer<typeof updateUserSchema>) => {
+    try {
+      const res = await updateUser({
+        ...values,
+        id: user.id,
+      });
+
+      if (!res.success)
+        return toast({
+          description: res.message || "Something went wrong.",
+          variant: "destructive",
+        });
+
+      toast({ description: res.message || "User updated successfully." });
+      form.reset();
+      router.push("/admin/users");
+    } catch (error) {
+      toast({
+        description: (error as Error).message || "Something went wrong.",
+        variant: "destructive",
+      });
+    }
+
     return;
   };
 
