@@ -458,7 +458,10 @@ export async function getAllOrders({
     query && query !== "all"
       ? {
           user: {
-            name: { contains: query, mode: "insensitive" },
+            name: {
+              contains: query,
+              mode: "insensitive",
+            } as Prisma.StringFilter,
           },
         }
       : {};
