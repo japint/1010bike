@@ -212,7 +212,7 @@ export async function getAllCategories() {
 export async function getFeaturedProducts() {
   const data = await prisma.product.findMany({
     where: { isFeatured: true },
-    orderBy: { CreatedAt: "desc" },
+    orderBy: { CreatedAt: "desc" }, // ⚠️ make sure this matches your schema
     take: 4,
   });
 

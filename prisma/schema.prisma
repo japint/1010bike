@@ -21,7 +21,7 @@ model Product {
   rating      Decimal     @default(0) @db.Decimal(3, 2)
   numReviews  Int         @default(0)
   isFeatured  Boolean     @default(false)
-  banner      String?
+  banner      String?     @db.Text
   CreatedAt   DateTime    @default(now()) @db.Timestamp(6)
   OrderItem   OrderItem[]
 }
