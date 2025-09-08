@@ -1,0 +1,76 @@
+"use client";
+
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/components/ui/carousel";
+import { Product } from "@/types";
+import Autoplay from "embla-carousel-autoplay";
+import Link from "next/link";
+import Image from "next/image";
+
+const ProductCarousel = ({ data }: { data: Product[] }) => {
+  const filteredData = data.filter(
+    (product) =>
+      typeof product.banner === "string" &&
+      product.banner.trim() !== "" &&
+      product.banner.trim().toLowerCase() !== "null"
+  );
+
+  console.log("Slides in carousel:", filteredData.length);
+
+  return (
+    <Carousel
+      className="w-full mb-12"
+      opts={{
+        loop: true,
+      }}
+      plugins={[
+        Autoplay({
+          delay: 6000,
+          stopOnInteraction: true,
+          stopOnMouseEnter: true,
+        }),
+      ]}
+    >
+      <CarouselContent>
+        {filteredData.map((product: Product) => (
+          <CarouselItem key={product.id}>
+            <Link href={`/product/${product.slug}`}>
+              <div className="relative mx-auto">
+                {typeof product.banner === "string" &&
+                product.banner.trim() !== "" &&
+                product.banner.trim().toLowerCase() !== "null" ? (
+                  <Image
+                    src={product.banner}
+                    alt={product.name}
+                    width={0}
+                    height={0}
+                    sizes="100vw"
+                    className="w-full h-[400px]"
+                  />
+                ) : (
+                  <div className="w-full h-[400px] bg-gray-200 flex items-center justify-center">
+                    <span>No Banner</span>
+                  </div>
+                )}
+                <div className="absolute inset-0 flex items-end justify-center">
+                  <h2 className="bg-gray-900 bg-opacity-50 text-2xl font-bold px-2 text-white">
+                    {product.name}
+                  </h2>
+                </div>
+              </div>
+            </Link>
+          </CarouselItem>
+        ))}
+      </CarouselContent>
+      <CarouselPrevious />
+      <CarouselNext />
+    </Carousel>
+  );
+};
+
+export default ProductCarousel;
