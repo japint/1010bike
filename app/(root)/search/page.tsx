@@ -5,6 +5,14 @@ import {
 } from "@/lib/actions/product.actions";
 import Link from "next/link";
 
+const prices = [
+  { name: "₱1 to ₱50", value: "1-50" },
+  { name: "₱51 to ₱100", value: "51-100" },
+  { name: "₱101 to ₱200", value: "101-200" },
+  { name: "₱201 to ₱500", value: "201-500" },
+  { name: "₱501 and above", value: "501-100000" },
+];
+
 const SearchPage = async (props: {
   searchParams: Promise<{
     q?: string;
@@ -86,6 +94,30 @@ const SearchPage = async (props: {
                   href={getFilterUrl({ c: x.category })}
                 >
                   {x.category}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </div>
+        {/* Price Links */}
+        <div className="text-xl mb-2 mt-8">Price</div>
+        <div>
+          <ul className="space-y-1">
+            <li>
+              <Link
+                className={`${price === "all" && "font-bold"}`}
+                href={getFilterUrl({ p: "all" })}
+              >
+                Any
+              </Link>
+            </li>
+            {prices.map((p) => (
+              <li key={p.value}>
+                <Link
+                  className={`${price === p.value && "font-bold"}`}
+                  href={getFilterUrl({ p: p.value })}
+                >
+                  {p.name}
                 </Link>
               </li>
             ))}
