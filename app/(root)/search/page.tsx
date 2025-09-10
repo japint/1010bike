@@ -1,4 +1,5 @@
 import ProductCard from "@/components/shared/product/product-card";
+import { Button } from "@/components/ui/button";
 import {
   getAllCategories,
   getAllProducts,
@@ -6,12 +7,14 @@ import {
 import Link from "next/link";
 
 const prices = [
-  { name: "₱1 to ₱50", value: "1-50" },
-  { name: "₱51 to ₱100", value: "51-100" },
-  { name: "₱101 to ₱200", value: "101-200" },
-  { name: "₱201 to ₱500", value: "201-500" },
-  { name: "₱501 and above", value: "501-100000" },
+  { name: "₱1 to ₱250", value: "1-250" },
+  { name: "₱251 to ₱500", value: "251-500" },
+  { name: "₱501 to ₱1000", value: "501-1000" },
+  { name: "₱1001 to ₱10000", value: "1001-10000" },
+  { name: "₱1001 and above", value: "1001-100000" },
 ];
+
+const ratings = [4, 3, 2, 1];
 
 const SearchPage = async (props: {
   searchParams: Promise<{
@@ -123,8 +126,51 @@ const SearchPage = async (props: {
             ))}
           </ul>
         </div>
+        {/* Rating Links */}
+        <div className="text-xl mb-2 mt-8">Customer Rating</div>
+        <div>
+          <ul className="space-y-1">
+            <li>
+              <Link
+                className={`${rating === "all" && "font-bold"}`}
+                href={getFilterUrl({ r: "all" })}
+              >
+                Any
+              </Link>
+            </li>
+            {ratings.map((r) => (
+              <li key={r}>
+                <Link
+                  className={`${rating === r.toString() && "font-bold"}`}
+                  href={getFilterUrl({ r: `${r}` })}
+                >
+                  {`${r} stars & up`}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </div>
       </div>
       <div className="md:col-span-4 space-y-4">
+        <div className="flex-between flex-col md:flex-row my-4">
+          <div className="flex items-center flex-wrap gap-2">
+            {q !== "all" && q !== "" && <span>Query: {q}</span>}
+            {category !== "all" && category !== "" && (
+              <span>Category: {category}</span>
+            )}
+            {price !== "all" && <span>Price: {price}</span>}
+            {rating !== "all" && <span>Rating: {rating} stars & up</span>}
+            {(q !== "all" && q !== "") ||
+            (category !== "all" && category !== "") ||
+            (price !== "all" && price !== "") ||
+            (rating !== "all" && rating !== "") ? (
+              <Button variant="link" asChild>
+                <Link href="/search">Clear</Link>
+              </Button>
+            ) : null}
+          </div>
+          <div>{/* SORT */}</div>
+        </div>
         <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
           {products.data.length === 0 && <div>No products found</div>}
           {products.data.map((product) => (
