@@ -11,7 +11,7 @@ const prices = [
   { name: "₱251 to ₱500", value: "251-500" },
   { name: "₱501 to ₱1000", value: "501-1000" },
   { name: "₱1001 to ₱10000", value: "1001-10000" },
-  { name: "₱1001 and above", value: "1001-100000" },
+  { name: "₱10001 and above", value: "10001-100000" },
 ];
 
 const ratings = [4, 3, 2, 1];
@@ -91,9 +91,7 @@ const SearchPage = async (props: {
             {categories.map((x) => (
               <li key={x.category}>
                 <Link
-                  className={`${
-                    (category === "all" || category === "") && "font-bold"
-                  }`}
+                  className={`${category === x.category && "font-bold"}`}
                   href={getFilterUrl({ c: x.category })}
                 >
                   {x.category}
