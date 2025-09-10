@@ -30,7 +30,7 @@ const ProductCarousel = ({ data }: { data: Product[] }) => {
       }}
       plugins={[
         Autoplay({
-          delay: 6000,
+          delay: 5000,
           stopOnInteraction: true,
           stopOnMouseEnter: true,
         }),
