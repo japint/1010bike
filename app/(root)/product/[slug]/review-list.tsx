@@ -3,6 +3,7 @@
 import { Review } from "@prisma/client";
 import Link from "next/link";
 import { useState } from "react";
+import ReviewForm from "./review-form";
 
 const ReviewList = ({
   userId,
@@ -20,10 +21,11 @@ const ReviewList = ({
         <div>No reviews yet. Be the first to review this product!</div>
       )}
       {userId ? (
-        <div>
-          {/* Review form goes here */}
-          <h3 className="font-semibold">Write a Review</h3>
-        </div>
+        <ReviewForm
+          userId={userId}
+          productId={productId}
+          onReviewSubmitted={() => {}}
+        />
       ) : (
         <div>
           Please
