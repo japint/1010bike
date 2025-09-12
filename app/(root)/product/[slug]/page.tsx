@@ -55,7 +55,6 @@ const ProductDetailsPage = async (props: {
             <Card>
               <CardContent className="p-4">
                 <div className="mb-2 flex justify-between">
-                  <div></div>
                   <div>Price</div>
                   <div>
                     <ProductPrice value={Number(product.price)} />
