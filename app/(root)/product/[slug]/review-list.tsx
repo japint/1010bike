@@ -25,7 +25,8 @@ const ReviewList = ({
   productId: string;
   productSlug: string;
 }) => {
-  const [reviews, setReviews] = useState<Review[]>([]);
+  type ReviewWithUser = Review & { user: { name: string } | null };
+  const [reviews, setReviews] = useState<ReviewWithUser[]>([]);
 
   useEffect(() => {
     const loadReviews = async () => {
@@ -78,7 +79,7 @@ const ReviewList = ({
               <div className="flex space-x-4 text-sm text-muted-foreground">
                 {/* Rating */}
                 <Rating value={review.rating} />
-                <div className="flex item-center">
+                <div className="flex items-center">
                   <User className="h-3 w-3 mr-1" />
                   {review.user ? review.user.name : "User"}
                 </div>
