@@ -149,12 +149,10 @@ export const updateUserSchema = updateProfileSchema.extend({
 
 // Schema to insert a review
 export const insertReviewSchema = z.object({
-  title: z.string().min(3, "Title must be at least 3 characters long"),
-  description: z
-    .string()
-    .min(3, "Description must be at least 3 characters long"),
-  productId: z.string().min(1, "Product ID is required"),
-  userId: z.string().min(1, "User ID is required"),
+  title: z.string().min(3, "Title must be at least 3 characters"),
+  description: z.string().min(3, "Description must be at least 3 characters"),
+  productId: z.string().min(1, "Product is required"),
+  userId: z.string().min(1, "User is required"),
   rating: z.coerce
     .number()
     .int()
