@@ -139,35 +139,32 @@ const ReviewForm = ({
               <FormField
                 control={form.control}
                 name="rating"
-                render={({ field }) => {
-                  return (
-                    <FormItem>
-                      <FormLabel>Rating</FormLabel>
-                      <Select
-                        onValueChange={field.onChange}
-                        value={field.value.toString()}
-                      >
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          {Array.from({ length: 5 }).map((_, index) => (
-                            <SelectItem
-                              key={index}
-                              value={(index + 1).toString()}
-                            >
-                              {index + 1}{" "}
-                              <StarIcon className="inline h-4 w-4" />
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  );
-                }}
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Rating</FormLabel>
+                    <Select
+                      onValueChange={(val) => field.onChange(Number(val))} // Convert to number
+                      value={field.value ? field.value.toString() : ""}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {Array.from({ length: 5 }).map((_, index) => (
+                          <SelectItem
+                            key={index}
+                            value={(index + 1).toString()}
+                          >
+                            {index + 1} <StarIcon className="inline h-4 w-4" />
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
             </div>
             <DialogFooter>

@@ -35,8 +35,10 @@ const ReviewList = ({
     loadReviews();
   }, [productId]);
 
-  const reload = () => {
-    console.log("Review submitted, reload reviews");
+  // Reload reviews after a new review is submitted
+  const reload = async () => {
+    const res = await getReviews({ productId });
+    setReviews([...res.data]);
   };
 
   return (
@@ -48,7 +50,7 @@ const ReviewList = ({
         <ReviewForm
           userId={userId}
           productId={productId}
-          onReviewSubmitted={() => {}}
+          onReviewSubmitted={reload}
         />
       ) : (
         <div>
@@ -78,7 +80,7 @@ const ReviewList = ({
                 <Rating value={review.rating} />
                 <div className="flex item-center">
                   <User className="h-3 w-3 mr-1" />
-                  {review.user ? review.user.name : "Unknown User"}
+                  {review.user ? review.user.name : "User"}
                 </div>
                 <div className="flex items-center">
                   <Calendar className="h-3 w-3 mr-1" />
