@@ -133,6 +133,7 @@ model Review {
   userId             String   @db.Uuid
   productId          String   @db.Uuid
   rating             Int
+  title              String
   description        String
   isVerifiedPurchase Boolean  @default(true)
   createdAt          DateTime @default(now()) @db.Timestamp(6)
