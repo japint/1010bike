@@ -275,7 +275,7 @@ export const approvePaypalOrder = async (
 // @todo: Update the order with payment details
 
 // update order to paid
-const updateOrderToPaid = async (
+export const updateOrderToPaid = async (
   orderId: string,
   paymentResult?: PaymentResult
 ) => {
