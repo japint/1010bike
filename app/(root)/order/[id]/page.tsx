@@ -30,7 +30,7 @@ const OrderDetailsPage = async (props: { params: Promise<{ id: string }> }) => {
     const paymentIntent = await stripe.paymentIntents.create({
       amount: Math.round(Number(order.totalPrice) * 100),
       currency: "PHP",
-      metadata: { order_id: order.id },
+      metadata: { orderId: order.id },
     });
     client_secret = paymentIntent.client_secret;
   }

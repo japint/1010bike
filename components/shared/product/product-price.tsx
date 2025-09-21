@@ -7,15 +7,14 @@ const ProductPrice = ({
   value: number;
   className?: string;
 }) => {
-  // ensure value is two decimal places
-  const stringValue = value.toFixed(2);
-  // get the int/float
-  const [intValue, floatValue] = stringValue.split(".");
+  // Format value to two decimal places and split into integer and decimal
+  const [peso, decimal] = value.toFixed(2).split(".");
+
   return (
     <p className={cn("text-2xl", className)}>
       <span className="text-xs align-super">₱</span>
-      {intValue}
-      <span className="text-xs align-super">.{floatValue}</span>
+      {Number(peso).toLocaleString("en-US")}
+      <span className="text-xs align-super">.{decimal}</span>
     </p>
   );
 };
