@@ -80,7 +80,7 @@ const ProductDetailsPage = async (props: {
                         productId: product.id,
                         name: product.name,
                         slug: product.slug,
-                        price: formatCurrency(product.price),
+                        price: Number(product.price).toFixed(2),
                         qty: 1,
                         image: product.images![0],
                       }}
