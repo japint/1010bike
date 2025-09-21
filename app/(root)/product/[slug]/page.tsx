@@ -9,6 +9,7 @@ import { getMyCart } from "@/lib/actions/cart.action";
 import { auth } from "@/auth";
 import ReviewList from "./review-list";
 import Rating from "@/components/shared/product/rating";
+import { formatCurrency } from "@/lib/utils";
 
 const ProductDetailsPage = async (props: {
   params: Promise<{ slug: string }>;
@@ -46,7 +47,7 @@ const ProductDetailsPage = async (props: {
               <div className="flex flex-col sm:flex-row sm:items-center gap-3">
                 <ProductPrice
                   value={Number(product.price)}
-                  className="w-24 rounded-full bg-green-100 text-green-700 px-5 py-2"
+                  className="w-30 rounded-full bg-green-100 text-green-700 px-5 py-2"
                 />
               </div>
             </div>
@@ -61,9 +62,7 @@ const ProductDetailsPage = async (props: {
               <CardContent className="p-4">
                 <div className="mb-2 flex justify-between">
                   <div>Price</div>
-                  <div>
-                    <ProductPrice value={Number(product.price)} />
-                  </div>
+                  <div>{formatCurrency(product.price)}</div>
                 </div>
                 <div className="mb-2 flex justify-between">
                   <div>Status</div>
@@ -81,7 +80,7 @@ const ProductDetailsPage = async (props: {
                         productId: product.id,
                         name: product.name,
                         slug: product.slug,
-                        price: product.price,
+                        price: formatCurrency(product.price),
                         qty: 1,
                         image: product.images![0],
                       }}
