@@ -14,11 +14,14 @@ export async function POST(req: NextRequest) {
     const { object } = event.data;
 
     // Update order status
-    await updateOrderToPaid(object.metadata.orderId, {
-      id: object.id,
-      status: "COMPLETED",
-      email_address: object.billing_details.email!,
-      pricePaid: (object.amount / 100).toFixed(),
+    await updateOrderToPaid({
+      orderId: object.metadata.orderId,
+      paymentResult: {
+        id: object.id,
+        status: "COMPLETED",
+        email_address: object.billing_details.email!,
+        pricePaid: (object.amount / 100).toFixed(),
+      },
     });
 
     return NextResponse.json({

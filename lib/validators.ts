@@ -107,7 +107,7 @@ export const paymentMethodSchema = z
 
 // schema for inserting an order
 export const insertOrderSchema = z.object({
-  userId: z.string().min(1, "User ID is required"),
+  userId: z.string().min(1, "User is required"),
   itemsPrice: currency,
   shippingPrice: currency,
   taxPrice: currency,
