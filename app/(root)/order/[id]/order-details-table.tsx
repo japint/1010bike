@@ -23,8 +23,8 @@ import {
   usePayPalScriptReducer,
 } from "@paypal/react-paypal-js";
 import {
-  createPaypalOrder,
-  approvePaypalOrder,
+  createPayPalOrder,
+  approvePayPalOrder,
   updateOrderToPaidCOD,
   deliverOrder,
 } from "@/lib/actions/order.actions";
@@ -73,7 +73,7 @@ const OrderDetailsTable = ({
 
   const handleCreatePayPalOrder = async () => {
     try {
-      const res = await createPaypalOrder(order.id);
+      const res = await createPayPalOrder(order.id);
 
       if (!res.success) {
         toast({
@@ -96,7 +96,7 @@ const OrderDetailsTable = ({
   };
 
   const handleApprovePayPalOrder = async (data: { orderID: string }) => {
-    const res = await approvePaypalOrder(order.id, data);
+    const res = await approvePayPalOrder(order.id, data);
     toast({
       variant: res.success ? "default" : "destructive",
       description: res.message,

@@ -40,6 +40,14 @@ const OrderDetailsPage = async (props: { params: Promise<{ id: string }> }) => {
       order={{
         ...order,
         shippingAddress: order.shippingAddress as ShippingAddress,
+        itemsPrice: order.itemsPrice?.toString(),
+        shippingPrice: order.shippingPrice?.toString(),
+        taxPrice: order.taxPrice?.toString(),
+        totalPrice: order.totalPrice?.toString(),
+        orderitems: order.orderitems.map((item) => ({
+          ...item,
+          price: item.price.toString(),
+        })),
       }}
       stripeClientSecret={client_secret}
       paypalClientId={process.env.PAYPAL_CLIENT_ID || "sb"}
