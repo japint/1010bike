@@ -278,25 +278,29 @@ export async function updateOrderToPaid({
 
   if (!updatedOrder) throw new Error("Order not found");
 
-  sendPurchaseReceipt({
-    order: {
-      ...updatedOrder,
-      itemsPrice: updatedOrder.itemsPrice.toString(),
-      shippingPrice: updatedOrder.shippingPrice.toString(),
-      taxPrice: updatedOrder.taxPrice.toString(),
-      totalPrice: updatedOrder.totalPrice.toString(),
-      shippingAddress: updatedOrder.shippingAddress as ShippingAddress,
-      paymentResult: updatedOrder.paymentResult as PaymentResult,
-      orderitems: updatedOrder.orderitems.map((item) => ({
-        productId: item.productId,
-        slug: item.slug,
-        image: item.image,
-        name: item.name,
-        price: item.price.toString(),
-        qty: item.qty,
-      })),
-    },
-  });
+  try {
+    await sendPurchaseReceipt({
+      order: {
+        ...updatedOrder,
+        itemsPrice: updatedOrder.itemsPrice.toString(),
+        shippingPrice: updatedOrder.shippingPrice.toString(),
+        taxPrice: updatedOrder.taxPrice.toString(),
+        totalPrice: updatedOrder.totalPrice.toString(),
+        shippingAddress: updatedOrder.shippingAddress as ShippingAddress,
+        paymentResult: updatedOrder.paymentResult as PaymentResult,
+        orderitems: updatedOrder.orderitems.map((item) => ({
+          productId: item.productId,
+          slug: item.slug,
+          image: item.image,
+          name: item.name,
+          price: item.price.toString(),
+          qty: item.qty,
+        })),
+      },
+    });
+  } catch (error) {
+    console.error("Failed to send email:", error);
+  }
 }
 
 // Get user's orders
