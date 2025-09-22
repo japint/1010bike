@@ -334,13 +334,36 @@ const ProductForm = ({
                 )}
               />
               {isFeatured && banner && (
-                <Image
-                  src={banner}
-                  alt="banner image"
-                  className="w-full object-cover object-center rounded-sm"
-                  width={1920}
-                  height={680}
-                />
+                <div className="flex flex-col gap-2">
+                  <Image
+                    src={banner}
+                    alt="banner image"
+                    className="w-full object-cover object-center rounded-sm"
+                    width={1920}
+                    height={680}
+                  />
+                  <div className="flex gap-2">
+                    <UploadButton
+                      endpoint="imageUploader"
+                      onClientUploadComplete={(res: { url: string }[]) => {
+                        form.setValue("banner", res[0].url);
+                      }}
+                      onUploadError={(error: Error) => {
+                        toast({
+                          variant: "destructive",
+                          description: `ERROR! ${error.message}`,
+                        });
+                      }}
+                    />
+                    <Button
+                      type="button"
+                      variant="destructive"
+                      onClick={() => form.setValue("banner", null)}
+                    >
+                      Remove
+                    </Button>
+                  </div>
+                </div>
               )}
 
               {isFeatured && !banner && (
