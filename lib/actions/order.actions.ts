@@ -122,6 +122,7 @@ export async function getOrderById(orderId: string) {
           select: {
             id: true,
             email: true,
+            name: true, // <-- Add this line
           },
         },
         orderitems: true,
