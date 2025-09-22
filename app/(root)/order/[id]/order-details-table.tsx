@@ -17,7 +17,6 @@ import Link from "next/link";
 import Image from "next/image";
 import { useToast } from "@/hooks/use-toast";
 import { useTransition } from "react";
-import { useState } from "react";
 import {
   PayPalButtons,
   PayPalScriptProvider,
@@ -32,17 +31,16 @@ import {
 import StripePayment from "./stripe-payment";
 
 const OrderDetailsTable = ({
-  order: initialOrder,
+  order,
   paypalClientId,
   isAdmin,
   stripeClientSecret,
 }: {
-  order: Order;
+  order: Omit<Order, "paymentResult">;
   paypalClientId: string;
   isAdmin: boolean;
   stripeClientSecret: string | null;
 }) => {
-  const [order, setOrder] = useState(initialOrder); // Local state for order
   const {
     id,
     shippingAddress,
@@ -103,11 +101,6 @@ const OrderDetailsTable = ({
       variant: res.success ? "default" : "destructive",
       description: res.message,
     });
-
-    // Update local state with the actual updated order data from server
-    if (res.success && res.data) {
-      setOrder(res.data); // Use the complete updated order from the server
-    }
   };
 
   // Button to mark order as paid
@@ -126,10 +119,6 @@ const OrderDetailsTable = ({
               variant: res.success ? "default" : "destructive",
               description: res.message,
             });
-            // Update local order state if successful
-            if (res.success && res.data) {
-              setOrder(res.data);
-            }
           })
         }
       >
@@ -154,10 +143,6 @@ const OrderDetailsTable = ({
               variant: res.success ? "default" : "destructive",
               description: res.message,
             });
-            // Update local state with the updated order data
-            if (res.success && res.data) {
-              setOrder(res.data);
-            }
           })
         }
       >
