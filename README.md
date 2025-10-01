@@ -273,6 +273,6 @@ If you have any questions or need help:
 
 ---
 
-**Built with ❤️ by [Your Name]**
+**Built with ❤️ by Angelo Centeno**
 
 _A modern, serverless e-commerce solution for the digital age._
